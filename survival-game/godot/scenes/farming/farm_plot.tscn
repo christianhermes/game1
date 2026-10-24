@@ -1,0 +1,79 @@
+[gd_scene format=3 uid="uid://bl5fa720av4lc"]
+
+[ext_resource type="Script" uid="uid://clnm8qvk1qnyb" path="res://scripts/farming/farm_plot.gd" id="1_4t3c6"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_lfxu0"]
+size = Vector3(4, 0.3, 4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjb8m"]
+albedo_color = Color(0.24, 0.105, 0.035, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_furrow"]
+size = Vector3(0.42, 0.18, 3.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_furrow"]
+albedo_color = Color(0.42, 0.22, 0.075, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_r6c0r"]
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_crop"]
+albedo_color = Color(0.35, 0.65, 0.2, 1)
+roughness = 0.9
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_odlsx"]
+size = Vector3(4.2, 1, 4.2)
+
+[node name="FarmPlot" type="Area3D" unique_id=1732681664]
+collision_layer = 1
+collision_mask = 0
+monitorable = true
+script = ExtResource("1_4t3c6")
+
+[node name="Soil" type="MeshInstance3D" parent="." unique_id=1078257869]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("BoxMesh_lfxu0")
+surface_material_override/0 = SubResource("StandardMaterial3D_hjb8m")
+
+[node name="Furrow1" type="MeshInstance3D" parent="."]
+position = Vector3(-1.35, 0.35, 0)
+mesh = SubResource("BoxMesh_furrow")
+surface_material_override/0 = SubResource("StandardMaterial3D_furrow")
+
+[node name="Furrow2" type="MeshInstance3D" parent="."]
+position = Vector3(-0.45, 0.35, 0)
+mesh = SubResource("BoxMesh_furrow")
+surface_material_override/0 = SubResource("StandardMaterial3D_furrow")
+
+[node name="Furrow3" type="MeshInstance3D" parent="."]
+position = Vector3(0.45, 0.35, 0)
+mesh = SubResource("BoxMesh_furrow")
+surface_material_override/0 = SubResource("StandardMaterial3D_furrow")
+
+[node name="Furrow4" type="MeshInstance3D" parent="."]
+position = Vector3(1.35, 0.35, 0)
+mesh = SubResource("BoxMesh_furrow")
+surface_material_override/0 = SubResource("StandardMaterial3D_furrow")
+
+[node name="CropVisual" type="MeshInstance3D" parent="." unique_id=535713797]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+visible = false
+mesh = SubResource("BoxMesh_r6c0r")
+surface_material_override/0 = SubResource("StandardMaterial3D_crop")
+
+[node name="InteractionShape" type="CollisionShape3D" parent="." unique_id=291174536]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_odlsx")
+
+[node name="GrowthTimer" type="Timer" parent="." unique_id=1905553464]
+one_shot = true
+
+[node name="StateLabel" type="Label3D" parent="." unique_id=34416947]
+position = Vector3(0, 2.1, 0)
+billboard = 1
+pixel_size = 0.015
+font_size = 64
+outline_size = 12
+text = "Leer"

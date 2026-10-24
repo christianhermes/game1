@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CropData" format=3 uid="uid://c12fhcqb8evsn"]
+
+[ext_resource type="Script" uid="uid://o1lj2b458s0c" path="res://scripts/farming/crop_data.gd" id="1_pig2s"]
+
+[resource]
+script = ExtResource("1_pig2s")
+id = &"wheat"
+display_name = "Weizen"
+seed_item_id = &"wheat_seed"
+metadata/_custom_type_script = "uid://o1lj2b458s0c"

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ProcessingRecipe" format=3 uid="uid://ctb8hlmesifrs"]
+
+[ext_resource type="Script" uid="uid://bcjjfrinsxlao" path="res://scripts/inventory/item_amount.gd" id="1_vyouu"]
+[ext_resource type="Script" uid="uid://cub835ftl8pdl" path="res://scripts/workstation/processing_recipe.gd" id="2_0jt43"]
+
+[sub_resource type="Resource" id="Resource_0o7rm"]
+script = ExtResource("1_vyouu")
+item_id = &"wheat"
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[sub_resource type="Resource" id="Resource_eirrj"]
+script = ExtResource("1_vyouu")
+item_id = &"wheat_seed"
+amount = 2
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[sub_resource type="Resource" id="Resource_ins5t"]
+script = ExtResource("1_vyouu")
+item_id = &"straw"
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[resource]
+script = ExtResource("2_0jt43")
+display_name = "Weizen dreschen"
+ingredient = SubResource("Resource_0o7rm")
+outputs = Array[ExtResource("1_vyouu")]([SubResource("Resource_eirrj"), SubResource("Resource_ins5t")])
+metadata/_custom_type_script = "uid://cub835ftl8pdl"

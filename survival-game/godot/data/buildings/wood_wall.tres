@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="BuildRecipe" format=3 uid="uid://cnpur4j8saeay"]
+
+[ext_resource type="Script" uid="uid://cihlel7yctui3" path="res://scripts/building/build_recipe.gd" id="1_4eqba"]
+[ext_resource type="Script" uid="uid://bcjjfrinsxlao" path="res://scripts/inventory/item_amount.gd" id="1_7bef6"]
+[ext_resource type="PackedScene" uid="uid://bog7vtjoxvii4" path="res://scenes/buildings/WoodWall.tscn" id="1_wrkcr"]
+
+[sub_resource type="Resource" id="Resource_wrkcr"]
+script = ExtResource("1_7bef6")
+item_id = &"wood"
+amount = 3
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[resource]
+script = ExtResource("1_4eqba")
+display_name = "Holzmauer"
+finished_scene = ExtResource("1_wrkcr")
+required_materials = Array[ExtResource("1_7bef6")]([SubResource("Resource_wrkcr")])
+required_tool_id = &"hammer"
+required_work = 5
+metadata/_custom_type_script = "uid://cihlel7yctui3"

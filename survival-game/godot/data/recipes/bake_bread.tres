@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ProcessingRecipe" format=3 uid="uid://dgralj33bx0yf"]
+
+[ext_resource type="Script" uid="uid://bcjjfrinsxlao" path="res://scripts/inventory/item_amount.gd" id="1_b3wan"]
+[ext_resource type="Script" uid="uid://cub835ftl8pdl" path="res://scripts/workstation/processing_recipe.gd" id="2_idliu"]
+
+[sub_resource type="Resource" id="Resource_7l2tv"]
+script = ExtResource("1_b3wan")
+item_id = &"flour"
+amount = 2
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[sub_resource type="Resource" id="Resource_wwqm5"]
+script = ExtResource("1_b3wan")
+item_id = &"bread"
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[resource]
+script = ExtResource("2_idliu")
+display_name = "Brot backen"
+ingredient = SubResource("Resource_7l2tv")
+outputs = Array[ExtResource("1_b3wan")]([SubResource("Resource_wwqm5")])
+metadata/_custom_type_script = "uid://cub835ftl8pdl"

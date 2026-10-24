@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://bdtjb7fnhnq43"]
+
+[ext_resource type="PackedScene" uid="uid://px1in3mowqkl" path="res://scenes/workstations/workstation.tscn" id="1_0cv5t"]
+[ext_resource type="Script" uid="uid://c0ykogada40t5" path="res://scripts/workstation/processing_station.gd" id="2_qsl1b"]
+[ext_resource type="Resource" uid="uid://tm5qfr53p8mj" path="res://data/recipes/mill_flour.tres" id="3_jd2rk"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjb8m"]
+albedo_color = Color(0.43776295, 0.43776292, 0.4377629, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lfxu0"]
+size = Vector3(2, 2, 2)
+
+[node name="Millstone" unique_id=661654220 instance=ExtResource("1_0cv5t")]
+script = ExtResource("2_qsl1b")
+recipe = ExtResource("3_jd2rk")
+display_name = "Mühlstein"
+
+[node name="StationMesh" type="MeshInstance3D" parent="." index="2" unique_id=2122375977]
+material_override = SubResource("StandardMaterial3D_hjb8m")
+mesh = SubResource("BoxMesh_lfxu0")

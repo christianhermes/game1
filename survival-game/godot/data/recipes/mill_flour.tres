@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ProcessingRecipe" format=3 uid="uid://tm5qfr53p8mj"]
+
+[ext_resource type="Script" uid="uid://bcjjfrinsxlao" path="res://scripts/inventory/item_amount.gd" id="1_2c6uy"]
+[ext_resource type="Script" uid="uid://cub835ftl8pdl" path="res://scripts/workstation/processing_recipe.gd" id="2_1mip2"]
+
+[sub_resource type="Resource" id="Resource_bn7hp"]
+script = ExtResource("1_2c6uy")
+item_id = &"wheat_seed"
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[sub_resource type="Resource" id="Resource_un2it"]
+script = ExtResource("1_2c6uy")
+item_id = &"flour"
+amount = 2
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[resource]
+script = ExtResource("2_1mip2")
+display_name = "Mehl mahlen"
+ingredient = SubResource("Resource_bn7hp")
+outputs = Array[ExtResource("1_2c6uy")]([SubResource("Resource_un2it")])
+metadata/_custom_type_script = "uid://cub835ftl8pdl"

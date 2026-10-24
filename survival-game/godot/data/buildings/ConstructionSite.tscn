@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://clg4i70q082bv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjb8m"]
+albedo_color = Color(0.90928686, 0.5901517, 7.70092e-07, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lfxu0"]
+size = Vector3(2, 0.1, 0.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_r6c0r"]
+size = Vector3(2, 2, 2)
+
+[node name="ConstructionSite" type="Area3D" unique_id=862743769]
+
+[node name="SiteMesh" type="MeshInstance3D" parent="." unique_id=1080890429]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_overlay = SubResource("StandardMaterial3D_hjb8m")
+mesh = SubResource("BoxMesh_lfxu0")
+
+[node name="InteractionShape" type="CollisionShape3D" parent="." unique_id=1334992601]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_r6c0r")
+
+[node name="SiteLabel" type="Label3D" parent="." unique_id=1618136287]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+pixel_size = 0.015
+text = "Baustelle"

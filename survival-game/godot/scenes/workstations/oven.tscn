@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://ber52b3dv1n1c"]
+
+[ext_resource type="PackedScene" uid="uid://px1in3mowqkl" path="res://scenes/workstations/workstation.tscn" id="1_28myc"]
+[ext_resource type="Script" uid="uid://c0ykogada40t5" path="res://scripts/workstation/processing_station.gd" id="2_3tauj"]
+[ext_resource type="Resource" uid="uid://dgralj33bx0yf" path="res://data/recipes/bake_bread.tres" id="3_on5j3"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjb8m"]
+albedo_color = Color(0.641934, 0.641934, 0.641934, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lfxu0"]
+size = Vector3(3, 5, 3)
+
+[node name="Oven" unique_id=661654220 instance=ExtResource("1_28myc")]
+script = ExtResource("2_3tauj")
+recipe = ExtResource("3_on5j3")
+display_name = "Ofen"
+
+[node name="StationLabel" parent="." index="1" unique_id=1254845410]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.5, 0)
+text = "Ofen"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." index="2" unique_id=581321726]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+material_override = SubResource("StandardMaterial3D_hjb8m")
+mesh = SubResource("BoxMesh_lfxu0")

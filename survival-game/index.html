@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mein Survival Game</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+    
+
+<body>
+    <header>
+        <h1>Mein Survival Game</h1> 
+    </header>
+    <div><h2>Level: <span id="levelDisplay">0</span> Welle: <span id="waveDisplay"></span> </h2></div>
+    <div id="relicDisplay"></div>
+<div><h3>Leben: <span id="hp">XXX</span> XP: <span id="xpDisplay"></span> Schaden: <span id="damageDisplay"></span> Dash: <span id="dashStatus">Bereit</span> Beeren: <span id="berryCounter">0</span> Gold: <span id="goldCounter"></span> Weizen: <span id="wheatCount"></span> Brot: <span id="breadCounter"></span></h3></div>
+    <div id="game"> 
+    <button id="backToDungeonButton"> Dungeon betreten </button>
+        <div id="player"></div>
+        <div id="berry"></div>
+        <div id="relic"></div>
+        <div id="explosion"></div>
+
+        <div id="merchantScreen"><h1>Händler</h1> <button id="buyDamage">Schwert schärfen - 30 Gold</button> <button id="nextWaveButton">Nächste Welle</button><button id="homeAreaButton">Nach Hause</button> </div>
+        <div id="gameOverScreen"><h1>GAME OVER</h1> <button id="restartButton">Neu starten</button></div>
+        <div id="levelUpScreen"><h1>Level Up</h1> <button id="damageUpgrade">+5 Schaden</button><button id="attackSpeedUpgrade">Schneller angreifen</button><button id="healUpgrade">+30 Leben</button><button id="maxHealthUpgrade">+20 maximales Leben</button></div>
+        <h1 id="waveMessage">Welle geschafft!</h1>
+
+        <div id="attackArea"></div>
+    </div>
+<script type="module" src="game.js"></script>
+
+</body>
+
+</html>

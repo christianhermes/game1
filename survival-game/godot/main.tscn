@@ -1,0 +1,220 @@
+[gd_scene format=3 uid="uid://cc5sb4merjlrw"]
+
+[ext_resource type="Script" uid="uid://cqiylxjca28lg" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://bq38wgh8jsdyq" path="res://scripts/player.gd" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://bl5fa720av4lc" path="res://scenes/farming/farm_plot.tscn" id="3_farm_plot"]
+[ext_resource type="Script" uid="uid://cr5v0sbds6mjx" path="res://scripts/inventory/inventory.gd" id="3_lquwl"]
+[ext_resource type="Script" uid="uid://clturb4ivwmsw" path="res://scripts/player_stats.gd" id="4_5vw27"]
+[ext_resource type="Resource" uid="uid://c12fhcqb8evsn" path="res://data/crops/wheat.tres" id="4_wheat"]
+[ext_resource type="Script" uid="uid://cgxi1ukuvkk8b" path="res://scripts/ui/hotbar.gd" id="6_7mycd"]
+[ext_resource type="PackedScene" uid="uid://bt625i64upabl" path="res://scenes/items/item_pickup.tscn" id="7_272bh"]
+[ext_resource type="Script" uid="uid://bh16g1a4l35eo" path="res://scripts/ui/status_hud.gd" id="8_kek77"]
+[ext_resource type="PackedScene" uid="uid://d04js800hcruo" path="res://scenes/workstations/threshing_station.tscn" id="10_4c57u"]
+[ext_resource type="PackedScene" uid="uid://bdtjb7fnhnq43" path="res://scenes/workstations/millstone.tscn" id="11_millstone"]
+[ext_resource type="PackedScene" uid="uid://ber52b3dv1n1c" path="res://scenes/workstations/oven.tscn" id="12_dg77c"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/construction_site.tscn" id="13_w48qg"]
+[ext_resource type="Resource" uid="uid://cnpur4j8saeay" path="res://data/buildings/wood_wall.tres" id="14_vivmo"]
+[ext_resource type="Script" uid="uid://josay2y4ucaq" path="res://scripts/building/build_manager.gd" id="15_vivmo"]
+
+[sub_resource type="Environment" id="WorldEnvironment"]
+background_mode = 1
+background_color = Color(0.48, 0.68, 0.83, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.75, 0.82, 0.9, 1)
+ambient_light_energy = 0.65
+
+[sub_resource type="StandardMaterial3D" id="GroundMaterial"]
+albedo_color = Color(0.25, 0.46, 0.2, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="GroundMesh"]
+material = SubResource("GroundMaterial")
+size = Vector3(40, 0.2, 40)
+
+[sub_resource type="BoxShape3D" id="GroundShape"]
+size = Vector3(40, 0.2, 40)
+
+[sub_resource type="CapsuleMesh" id="PlayerMesh"]
+
+[sub_resource type="CapsuleShape3D" id="PlayerShape"]
+
+[sub_resource type="SphereShape3D" id="InteractionShape"]
+radius = 2.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_272bh"]
+albedo_color = Color(0.5823756, 0.5823756, 0.5823756, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjb8m"]
+albedo_color = Color(0.24948537, 0.7628475, 1.92523e-06, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lfxu0"]
+size = Vector3(2, 0.1, 0.4)
+
+[node name="Main" type="Node3D" unique_id=672482601]
+script = ExtResource("1_main")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=652560977]
+environment = SubResource("WorldEnvironment")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=57751367]
+transform = Transform3D(0.81915206, 0.46984634, -0.32898995, 0, 0.57357645, 0.81915206, 0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 80.0
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1358479500]
+projection = 1
+current = true
+size = 27.0
+
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=1936844364]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("GroundMesh")
+
+[node name="GroundBody" type="StaticBody3D" parent="." unique_id=382104567]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="GroundCollision" type="CollisionShape3D" parent="GroundBody" unique_id=766814386]
+shape = SubResource("GroundShape")
+
+[node name="Player" type="CharacterBody3D" parent="." unique_id=1403501398]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1)
+script = ExtResource("2_player")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player" unique_id=187983686]
+mesh = SubResource("PlayerMesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player" unique_id=64474746]
+shape = SubResource("PlayerShape")
+
+[node name="InteractionArea" type="Area3D" parent="Player" unique_id=37990210]
+collision_layer = 0
+
+[node name="InteractionShape" type="CollisionShape3D" parent="Player/InteractionArea" unique_id=1378207457]
+shape = SubResource("InteractionShape")
+
+[node name="Inventory" type="Node" parent="Player" unique_id=921649693]
+script = ExtResource("3_lquwl")
+metadata/_custom_type_script = "uid://cr5v0sbds6mjx"
+
+[node name="PlayerStats" type="Node" parent="Player" unique_id=681528531]
+script = ExtResource("4_5vw27")
+
+[node name="FarmPlot" parent="." unique_id=111363160 instance=ExtResource("3_farm_plot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 5)
+crop_data = ExtResource("4_wheat")
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1218987793]
+
+[node name="Hotbar" type="HBoxContainer" parent="UI" unique_id=551910974 node_paths=PackedStringArray("inventory")]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -263.5
+offset_top = -55.0
+offset_right = 263.5
+grow_horizontal = 2
+grow_vertical = 0
+offset_transform_enabled = true
+theme_override_constants/separation = 4
+script = ExtResource("6_7mycd")
+inventory = NodePath("../../Player/Inventory")
+
+[node name="Slot1" type="Button" parent="UI/Hotbar" unique_id=601483624]
+custom_minimum_size = Vector2(55, 55)
+layout_mode = 2
+
+[node name="Slot2" type="Button" parent="UI/Hotbar" unique_id=1807544082]
+custom_minimum_size = Vector2(55, 55)
+layout_mode = 2
+
+[node name="Slot3" type="Button" parent="UI/Hotbar" unique_id=1514037078]
+custom_minimum_size = Vector2(55, 55)
+layout_mode = 2
+
+[node name="Slot4" type="Button" parent="UI/Hotbar" unique_id=1431322967]
+custom_minimum_size = Vector2(55, 55)
+layout_mode = 2
+
+[node name="Slot5" type="Button" parent="UI/Hotbar" unique_id=1607286690]
+custom_minimum_size = Vector2(55, 55)
+layout_mode = 2
+
+[node name="Slot6" type="Button" parent="UI/Hotbar" unique_id=148668963]
+custom_minimum_size = Vector2(55, 55)
+layout_mode = 2
+
+[node name="Slot7" type="Button" parent="UI/Hotbar" unique_id=1465256088]
+custom_minimum_size = Vector2(55, 55)
+layout_mode = 2
+
+[node name="Slot8" type="Button" parent="UI/Hotbar" unique_id=413454395]
+custom_minimum_size = Vector2(55, 55)
+layout_mode = 2
+
+[node name="Slot9" type="Button" parent="UI/Hotbar" unique_id=1788512004]
+custom_minimum_size = Vector2(55, 55)
+layout_mode = 2
+
+[node name="StatusHUD" type="VBoxContainer" parent="UI" unique_id=1647255700 node_paths=PackedStringArray("stats")]
+custom_minimum_size = Vector2(220, 0)
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 60.0
+offset_bottom = 109.0
+script = ExtResource("8_kek77")
+stats = NodePath("../../Player/PlayerStats")
+
+[node name="HealthBar" type="ProgressBar" parent="UI/StatusHUD" unique_id=1098886061]
+custom_minimum_size = Vector2(220, 25)
+layout_mode = 2
+
+[node name="ManaBar" type="ProgressBar" parent="UI/StatusHUD" unique_id=2061163705]
+custom_minimum_size = Vector2(220, 25)
+layout_mode = 2
+
+[node name="HungerBar" type="ProgressBar" parent="UI/StatusHUD" unique_id=1337721776]
+custom_minimum_size = Vector2(220, 25)
+layout_mode = 2
+
+[node name="WoodPickup" parent="." unique_id=585756525 instance=ExtResource("7_272bh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 10)
+item_id = &"wood"
+amount = 3
+
+[node name="StonePickup2" parent="." unique_id=807605720 instance=ExtResource("7_272bh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 7)
+item_id = &"stone"
+
+[node name="MeshInstance3D" parent="StonePickup2" index="0" unique_id=1819555607]
+material_override = SubResource("StandardMaterial3D_272bh")
+
+[node name="ThreshingStation" parent="." unique_id=661654220 instance=ExtResource("10_4c57u")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 5)
+
+[node name="Millstone" parent="." unique_id=529006087 instance=ExtResource("11_millstone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 10)
+
+[node name="Oven" parent="." unique_id=1605596297 instance=ExtResource("12_dg77c")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, -10)
+
+[node name="ConstructionSite" parent="." unique_id=290744299 instance=ExtResource("13_w48qg")]
+recipe = ExtResource("14_vivmo")
+
+[node name="BuildManager" type="Node3D" parent="." unique_id=504554092 node_paths=PackedStringArray("player", "camera")]
+script = ExtResource("15_vivmo")
+player = NodePath("../Player")
+camera = NodePath("../Camera3D")
+construction_site_scene = ExtResource("13_w48qg")
+selected_recipe = ExtResource("14_vivmo")
+
+[node name="PlacementPreview" type="MeshInstance3D" parent="BuildManager" unique_id=131452616]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+visible = false
+material_overlay = SubResource("StandardMaterial3D_hjb8m")
+mesh = SubResource("BoxMesh_lfxu0")
+
+[connection signal="selected_item_changed" from="UI/Hotbar" to="Player" method="_on_hotbar_selected_item_changed"]
+
+[editable path="StonePickup2"]

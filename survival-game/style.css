@@ -1,0 +1,332 @@
+#game {
+    background-color: lightgoldenrodyellow;
+    height: 500px;
+    width: 800px;
+    border: 2px solid black;
+    position: relative;
+}
+#game.home{
+    background-color: lightgreen;
+}
+#backToDungeonButton{
+    display: none;
+    position: absolute;
+    left: 10px;
+    top: 10px;
+}
+.field,
+.breadOven {
+    position: absolute;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    /* Das komplette Bild wird im vorhandenen Element angezeigt und nicht abgeschnitten. */
+    background-size: contain;
+    image-rendering: pixelated;
+}
+
+.field.ready{
+    background-image: url("assets/field-ready.png");
+}
+.field.empty{
+    background-image: url("assets/field-empty.png");
+}
+.field.planted{
+    background-image: url("assets/field-planted.png");
+}
+
+.breadOven{
+    background-image: url("assets/bread-oven-empty.png"); 
+}
+.breadOven.baking{
+    background-image: url("assets/bread-oven-baking.png");
+}
+.breadOven.ready{
+    background-image: url("assets/bread-oven-ready.png");
+}
+
+#player {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-color: transparent;
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    background-size: 180%;
+
+    background-image: url("assets/player-knight.png");
+}
+
+#berry {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-color: transparent;
+    height: 18px;
+    width: 18px;
+    position: absolute;
+    background-size: 220%;
+    background-image: url("assets/berry.png");
+
+}
+
+
+.enemy {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-color: transparent;
+    height: 48px;
+    width: 48px;
+    position: absolute;
+    background-size: 220%;
+
+    background-image: url("assets/enemy-goblin.png");
+
+
+}
+
+#attackArea {
+    background-color: yellow;
+    display: none;
+    height: 48px;
+    width: 48px;
+    position: absolute;
+}
+
+#gameOverScreen {
+    color: red;
+    display: none;
+    left: 250px;
+    top: 200px;
+    position: absolute;
+}
+
+#levelUpScreen {
+    color: black;
+    background-color: goldenrod;
+    display: none;
+    left: 250px;
+    top: 200px;
+    position: absolute;
+}
+
+#waveMessage {
+    color: green;
+    background-color: goldenrod;
+    display: none;
+    left: 250px;
+    top: 100px;
+    position: absolute;
+}
+
+.enemy.boss {
+    background-color: darkred;
+    border: 2px solid black;
+    position: absolute;
+    box-sizing: border-box;
+    height: 72px;
+    width: 72px;
+}
+
+
+.enemy.boss.charging-special{
+    filter: drop-shadow(10px 10px 5px rgba(240, 233, 53, 0.925))
+}
+
+/* Der Kreis zeigt dem Spieler, welchen Bereich der Boss gleich trifft. */
+.special-warning {
+    position: absolute;
+    box-sizing: border-box;
+    border: 4px solid rgba(180, 20, 20, 0.9);
+    border-radius: 50%;
+    background-color: rgba(255, 60, 20, 0.18);
+    pointer-events: none;
+    animation: special-warning-pulse 700ms ease-in-out;
+}
+
+/* Während der Aufladezeit wird die Warnung deutlicher. */
+@keyframes special-warning-pulse {
+    from {
+        opacity: 0.35;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#player.dashing {
+    background-color: aqua;
+    box-shadow: 10px 5px 5px black;
+}
+
+#relic {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-color: transparent;
+    width: 28px;
+    height: 28px;
+    position: absolute;
+    display: none;
+    background-size: 200%;
+}
+
+#relic.dash {
+    background-image: url("assets/relic-dash.png");
+
+}
+
+#relic.fireRate {
+    background-image: url("assets/relic-fire-rate.png");
+}
+
+#relic.damage {
+    background-image: url("assets/relic-damage.png");
+}
+
+.projectile {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-color: transparent;
+    height: 12px;
+    width: 24px;
+    position: absolute;
+    background-image: url("assets/projectile-arrow.png");
+    background-size: 180%;
+    transform-origin: center;
+
+
+}
+
+.enemy.skeleton {
+    background-image: url("assets/enemy-skeleton.png");
+}
+
+.projectile.enemy-projectile {
+    background-image: url("assets/projectile-arrow.png");
+}
+
+.obstacle {
+    position: absolute;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-color: transparent;
+    background-size: 220%;
+
+}
+
+.obstacle.trench {
+    background-image: url("assets/obstacle-trench.png");
+    background-size: 100% 100%;
+
+}
+
+.obstacle.wall {
+    background-image: url("assets/obstacle-wall.png");
+    background-size: 100% 100%;
+
+}
+
+.obstacle.tree {
+    background-image: url("assets/obstacle-tree.png");
+    background-size: 140%;
+    background-position: center;
+}
+
+.enemy.exploder {
+    background-image: url("assets/enemy-exploder.png");
+    background-size: 90%;
+}
+
+.enemy.exploder.charging {
+    background-color: orangered;
+}
+
+#explosion {
+    background-color: orangered;
+    display: none;
+    border-radius: 100px;
+    position: absolute;
+    height: 100px;
+    width: 100px;
+}
+
+
+.drop.gold{
+    background-color: transparent;
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 200%;
+    image-rendering: pixelated;
+    background-image: url("assets/gold-drop.png");
+}
+
+#merchantScreen{
+    background-color: blanchedalmond;
+    height: 300px;
+    width: 500px;
+    display: none;
+    left: 250px;
+    top: 200px;
+    position: absolute;
+}
+
+.enemy.hit {
+    filter: brightness(2) sepia(1) saturate(4);
+}
+
+.damage-number {
+    position: absolute;
+    color: #b00000;
+    font-size: 20px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 10;
+    animation: schweben 500ms ease-out forwards;
+}
+
+/* Der Container bleibt immer gleich groß und bildet den dunklen Hintergrund. */
+.health-bar-container {
+    position: absolute;
+    left: 0;
+    bottom: -10px;
+    width: 100%;
+    height: 6px;
+    background-color: black;
+    border: 1px solid black;
+    box-sizing: border-box;
+}
+
+/* Nur diese innere Füllung wird durch updateHealth() schmaler und umgefärbt. */
+.health-bar-fill {
+    height: 100%;
+    width: 100%;
+    background-color: green;
+    transition: width 150ms ease-out, background-color 150ms ease-out;
+}
+
+@keyframes schweben {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -35px);
+    }
+}

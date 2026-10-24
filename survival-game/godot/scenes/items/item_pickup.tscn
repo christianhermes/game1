@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://bt625i64upabl"]
+
+[ext_resource type="Script" uid="uid://dgwiodaccexi4" path="res://scripts/items/item_pickup.gd" id="1_72j5x"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_hjb8m"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r6c0r"]
+albedo_color = Color(0.53912616, 0.2927029, 0.019788478, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_272bh"]
+
+[node name="ItemPickup" type="Area3D" unique_id=585756525]
+script = ExtResource("1_72j5x")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1819555607]
+mesh = SubResource("BoxMesh_hjb8m")
+surface_material_override/0 = SubResource("StandardMaterial3D_r6c0r")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=736429780]
+shape = SubResource("BoxShape3D_272bh")
+
+[node name="Label3D" type="Label3D" parent="." unique_id=1696237559]
+billboard = 1
+pixel_size = 0.015
+text = "Holz"

@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://px1in3mowqkl"]
+
+[ext_resource type="Script" uid="uid://bqdu6tch0hh8n" path="res://scripts/workstation/workstation.gd" id="1_q7vxl"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_jc6c0"]
+size = Vector3(3, 2, 3)
+
+[node name="Workstation" type="Area3D" unique_id=661654220]
+script = ExtResource("1_q7vxl")
+
+[node name="InteractionShape" type="CollisionShape3D" parent="." unique_id=1620755996]
+shape = SubResource("BoxShape3D_jc6c0")
+
+[node name="StationLabel" type="Label3D" parent="." unique_id=1254845410]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+billboard = 1
+pixel_size = 0.015
+text = "Arbeitsstation"
