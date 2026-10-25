@@ -6,6 +6,7 @@ extends Node
 enum JobType {
 	MOVE,
 	PICKUP,
+	EXTRACT_RESOURCE,
 }
 
 
@@ -15,6 +16,7 @@ enum JobStatus {
 	OPEN,
 	RUNNING,
 	FINISHED,
+	CANCELLED,
 }
 
 
@@ -76,5 +78,18 @@ func finish_job(job_id: int) -> bool:
 		return false
 	if job.status == JobStatus.RUNNING:
 		job["status"] = JobStatus.FINISHED
+		return true
+	return false
+
+
+# Bricht einen offenen oder laufenden Auftrag ab. Bereits abgeschlossene oder
+# abgebrochene Aufträge bleiben unverändert und liefern false zurück.
+func cancel_job(job_id: int) -> bool:
+	var job = get_job(job_id)
+	if job.is_empty():
+		return false
+	var current_status = job["status"]
+	if current_status == JobStatus.OPEN or current_status == JobStatus.RUNNING:
+		job["status"] = JobStatus.CANCELLED
 		return true
 	return false

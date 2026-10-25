@@ -27,6 +27,7 @@ const BASE_CAMERA_ZOOM_STEP := 2.0
 @onready var build_manager: BuildManager = $BuildManager
 @onready var hotbar = $UI/Hotbar
 @onready var control_mode_label: Label = $UI/ControlModeLabel
+@onready var workstation_menu = $UI/WorkstationMenu
 
 # Diese Position ist das Ziel, auf das die Kamera schaut.
 var camera_target := Vector3.ZERO
@@ -117,17 +118,27 @@ func _select_at_mouse(mouse_position: Vector2) -> void:
 		ray_origin,
 		ray_end,
 	)
+	# Arbeitsstationen sind Area3D-Nodes und müssen bei der Auswahl ausdrücklich
+	# in die Raycast-Abfrage aufgenommen werden.
+	query.collide_with_areas = true
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	
 	# Wenn hit leer ist, soll die bisherige Auswahl aufgehoben werden.
 	if hit.is_empty():
+		workstation_menu.close_menu()
 		_set_selected_actor(null)
 	else:
-	# Hole andernfalls den collider aus hit.
-	#  Wähle ihn nur aus, wenn er zur Gruppe "selectable" gehört.
-	#  Ein Treffer auf ein anderes Objekt soll die Auswahl aufheben.
-		if hit.get("collider").is_in_group("selectable"):
-			_set_selected_actor(hit.get("collider"))
+		var collider: Object = hit.get("collider")
+		if collider is ProcessingStation:
+			_set_selected_actor(null)
+			workstation_menu.open_for_station(collider as ProcessingStation)
+			return
+
+		workstation_menu.close_menu()
+		# Wähle nur Nodes aus der Gruppe selectable als Bewohner aus. Ein Treffer
+		# auf ein anderes Objekt hebt die bisherige Auswahl auf.
+		if collider != null and collider.is_in_group("selectable"):
+			_set_selected_actor(collider)
 		else:
 			_set_selected_actor(null)
 
@@ -147,8 +158,8 @@ func _set_selected_actor(actor: Node3D) -> void:
 		selected_actor.set_selected(true)
 
 
-# Gibt dem ausgewählten Bewohner einen Laufauftrag an die angeklickte
-# Position auf dem Boden.
+# Ersetzt den bisherigen Befehl des ausgewählten Bewohners durch einen
+# zielabhängigen Weltauftrag oder einen Laufbefehl zur angeklickten Position.
 func _command_selected_actor(mouse_position: Vector2) -> void:
 	if selected_actor == null:
 		return
@@ -173,16 +184,23 @@ func _command_selected_actor(mouse_position: Vector2) -> void:
 	if hit.is_empty():
 		return
 
+	# Jeder gültige neue Befehl ersetzt den bisherigen Auftrag und dessen
+	# Bewegungsziel. Dadurch bleibt kein alter RUNNING-Auftrag zurück.
+	if selected_actor.has_method("cancel_current_job"):
+		selected_actor.call("cancel_current_job")
+
 	var collider: Object = hit.get("collider")
 	if (
 		collider != null
 		and collider.has_method("get_job_target_id")
+		and collider.has_method("get_job_type")
 		and selected_actor.has_method("get_worker_id")
+		and selected_actor.has_method("assign_job")
 	):
 		# Stabile Ziel- und Bewohner-IDs halten den Auftrag unabhängig von den
 		# aktuell geladenen Nodes. Der Manager liefert seine eindeutige ID zurück.
 		var job_id: int = SettlementJobManager.create_job(
-			SettlementJobManager.JobType.PICKUP,
+			collider.get_job_type(),
 			collider.get_job_target_id(),
 			hit.get("position"),
 			selected_actor.get_worker_id()
@@ -191,6 +209,11 @@ func _command_selected_actor(mouse_position: Vector2) -> void:
 		print("Neuer Auftrag: ", job_id)
 		if selected_actor.assign_job(job_id):
 			return
+
+		# Eine fehlgeschlagene Übernahme darf keinen offenen Auftrag im Manager
+		# zurücklassen und wird nicht als gewöhnlicher Laufbefehl ausgeführt.
+		SettlementJobManager.cancel_job(job_id)
+		return
 
 	# Der ausgewählte Bewohner entscheidet mit seinem NavigationAgent3D selbst,
 	# welchen begehbaren Weg er zu dieser Position nimmt.
@@ -245,6 +268,7 @@ func _apply_control_mode() -> void:
 			+ "Tab: Charakter | WASD: Kamera | Q/E: Drehen | Mausrad: Zoom | B: Bauen"
 		)
 	else:
+		workstation_menu.close_menu()
 		camera_target = player.global_position
 		camera.size = DEFAULT_CAMERA_SIZE
 		control_mode_label.text = (

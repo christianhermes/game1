@@ -51,7 +51,7 @@ func receive_item(item_id: StringName, amount: int) -> void:
 func set_direct_control_enabled(enabled: bool) -> void:
 	direct_control_enabled = enabled
 	if direct_control_enabled:
-		cancel_move_target()
+		cancel_current_job()
 	else:
 		velocity = Vector3.ZERO
 
@@ -257,8 +257,9 @@ func _find_job_target(target_id: StringName) -> Node3D:
 	return null
 
 
-# Führt den aktiven Auftrag nach Erreichen seines Bewegungsziels aus. Ein
-# PICKUP-Auftrag interagiert mit dem geladenen Ziel und wird danach beendet.
+# Führt einen zielgebundenen Auftrag nach Erreichen seines Bewegungsziels aus.
+# Sowohl lose Pickups als auch Ressourcenquellen verwenden ihre eigene
+# interact()-Methode und werden danach im Manager abgeschlossen.
 func _complete_current_job() -> void:
 	var target = null
 	if current_job_id < 0:
@@ -267,9 +268,19 @@ func _complete_current_job() -> void:
 	if job.is_empty():
 		current_job_id = -1
 		return
-	if job["type"] == SettlementJobManager.JobType.PICKUP:
-		target = _find_job_target(job["target_id"])
+	match job["type"]:
+		SettlementJobManager.JobType.PICKUP, SettlementJobManager.JobType.EXTRACT_RESOURCE:
+			target = _find_job_target(job["target_id"])
 	if target != null and target.has_method("interact"):
 		target.call("interact", self)
 	if SettlementJobManager.finish_job(current_job_id):
 		current_job_id = -1
+
+
+# Bricht einen aktiven Auftrag im Manager ab und beendet unabhängig davon auch
+# einen reinen Laufbefehl, der keinen gespeicherten Auftrag besitzt.
+func cancel_current_job() -> void:
+	if current_job_id >= 0:
+		SettlementJobManager.cancel_job(current_job_id)
+	current_job_id = -1
+	cancel_move_target()

@@ -12,9 +12,12 @@
 [ext_resource type="PackedScene" uid="uid://d04js800hcruo" path="res://scenes/workstations/threshing_station.tscn" id="10_4c57u"]
 [ext_resource type="PackedScene" uid="uid://bdtjb7fnhnq43" path="res://scenes/workstations/millstone.tscn" id="11_millstone"]
 [ext_resource type="PackedScene" uid="uid://ber52b3dv1n1c" path="res://scenes/workstations/oven.tscn" id="12_dg77c"]
+[ext_resource type="Script" uid="uid://cub835ftl8pdl" path="res://scripts/workstation/processing_recipe.gd" id="13_074og"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/construction_site.tscn" id="13_w48qg"]
 [ext_resource type="Resource" uid="uid://cnpur4j8saeay" path="res://data/buildings/wood_wall.tres" id="14_vivmo"]
 [ext_resource type="Script" uid="uid://josay2y4ucaq" path="res://scripts/building/build_manager.gd" id="15_vivmo"]
+[ext_resource type="PackedScene" path="res://scenes/world/rubble_pile.tscn" id="16_rubble"]
+[ext_resource type="PackedScene" path="res://scenes/ui/workstation_menu.tscn" id="17_station_menu"]
 
 [sub_resource type="Environment" id="WorldEnvironment"]
 background_mode = 1
@@ -115,6 +118,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 5)
 crop_data = ExtResource("4_wheat")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=1218987793]
+
+[node name="WorkstationMenu" parent="UI" unique_id=1021962193 instance=ExtResource("17_station_menu")]
 
 [node name="Hotbar" type="HBoxContainer" parent="UI" unique_id=551910974 node_paths=PackedStringArray("inventory")]
 anchors_preset = 7
@@ -220,14 +225,20 @@ item_id = &"stone"
 [node name="MeshInstance3D" parent="StonePickup2" index="0" unique_id=1819555607]
 material_override = SubResource("StandardMaterial3D_272bh")
 
+[node name="RubblePile" parent="." unique_id=629879835 instance=ExtResource("16_rubble")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 7)
+
 [node name="ThreshingStation" parent="." unique_id=661654220 instance=ExtResource("10_4c57u")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 5)
+available_recipes = Array[ExtResource("13_074og")]([])
 
 [node name="Millstone" parent="." unique_id=529006087 instance=ExtResource("11_millstone")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.1507568, 10)
+available_recipes = Array[ExtResource("13_074og")]([])
 
 [node name="Oven" parent="." unique_id=1605596297 instance=ExtResource("12_dg77c")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, -10)
+available_recipes = Array[ExtResource("13_074og")]([])
 
 [node name="ConstructionSite" parent="." unique_id=290744299 instance=ExtResource("13_w48qg")]
 recipe = ExtResource("14_vivmo")

@@ -49,6 +49,7 @@ Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen t
 - **Raum-Arbeitszuweisung:** Ein oder mehrere Bewohner können einem Raum bzw. dessen Arbeitsplätzen zugeordnet werden. Produktionsaufträge werden an geeigneten Stationen durch zugewiesene Bewohner abgearbeitet; die Anzahl gleichzeitiger Tätigkeiten hängt von realen Arbeitsplätzen ab, nicht nur vom Raumlabel.
 - **Lokale Lager:** Kisten, Regale, Stapel etc. sind echte physische Behälter mit eigenen Beständen/Kapazitäten; ein Raum erhält **kein unsichtbares magisches Inventar**. Geeignete lokale Lager können dem Raum/Stationen zugeordnet werden. Bestandsziel und Filter je Lager oder Raum sind als späterer Konfigurationskomfort vorgesehen.
 - **Materialversorgung:** Verfügbare Transport-NPCs bringen Materialien aus physisch erreichbaren Lagern. Fehlt ein Transporteur, dürfen zugewiesene Arbeiter erforderliche Materialien **selbst holen**. Fehlen Materialien/Platz/Wege, wird die Arbeit nachvollziehbar pausiert. Entnahme, Reservierung und Transport verhindern Doppelverwendung, Verlust und endloses Pendeln.
+- **Produktionswarteschlangen:** Jedes Rezept besitzt höchstens einen sichtbaren Auftrag mit einer Wiederholungsmenge. Die Liste ist manuell nach Priorität sortierbar; der oberste ausführbare Auftrag wird unabhängig von seiner Wiederholungsmenge zuerst berücksichtigt. Jeder Auftrag kann gezielt abgebrochen werden.
 - **Transporttiere:** Esel können **später optional** dieselbe allgemeine Logistik unterstützen; weder Starttier noch Voraussetzung für Funktionsräume oder frühe Transportlogik.
 - **Später optional:** Raumübergreifende Produktionsketten, Auftragsreihenfolgen, Zielbestände wie „20 Brote halten“, automatische Zwischenproduktplanung. **Nicht** Teil der ersten Raumversion.
 - **Umbauten:** Raumgrenzen, fehlende Pflichtobjekte, Raumteilungen/-zusammenlegungen und unzugängliche Arbeitsplätze müssen Status/Zuordnung aktualisieren; Materialien bleiben in ihren realen Behältern.
@@ -584,6 +585,7 @@ Nächster vorgeschlagener Schritt:
 
 ## 23. Änderungsprotokoll 2026-10-25 – Design-Pivot
 
+- Produktionswarteschlangen auf je einen Auftrag pro Rezept, Wiederholungsmengen, manuelle Hoch-/Runter-Priorisierung und gezieltes Abbrechen festgelegt.
 - Basisperspektive auf Going-Medieval-artige Übersicht geändert; Abenteuer top-down direkt gesteuert.
 - Eigener Held ist erster autonomer Siedlungs-NPC; NPC-Arbeit und -Transport ersetzen Esel-Logistik.
 - Esel/Tiere auf unbestimmte spätere Erweiterung verschoben.
