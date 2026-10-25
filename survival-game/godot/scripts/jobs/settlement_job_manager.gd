@@ -39,7 +39,7 @@ func create_job(
 	# Alle für Szenenwechsel relevanten Auftragsdaten werden als Werte
 	# gespeichert. Dadurch hängt der Manager nicht von einem geladenen Node ab.
 	jobs[job_id] = {
-		"id": next_job_id -1,
+		"id": job_id,
 		"type": job_type,
 		"target_id": target_id,
 		"target_position": target_position,
@@ -54,3 +54,27 @@ func create_job(
 # Dictionary, sodass Aufrufer den fehlenden Auftrag mit is_empty() erkennen.
 func get_job(job_id: int) -> Dictionary:
 	return jobs.get(job_id, {})
+
+
+# Startet ausschließlich einen vorhandenen offenen Auftrag. Der Rückgabewert
+# zeigt an, ob der Status erfolgreich auf RUNNING geändert wurde.
+func start_job(job_id: int) -> bool:
+	var job = get_job(job_id)
+	if job.is_empty():
+		return false
+	if job.status == JobStatus.OPEN:
+		job["status"] = JobStatus.RUNNING
+		return true
+	return false
+
+
+# Beendet ausschließlich einen laufenden Auftrag. Unbekannte oder bereits
+# abgeschlossene Aufträge bleiben unverändert und liefern false zurück.
+func finish_job(job_id: int) -> bool:
+	var job = get_job(job_id)
+	if job.is_empty():
+		return false
+	if job.status == JobStatus.RUNNING:
+		job["status"] = JobStatus.FINISHED
+		return true
+	return false

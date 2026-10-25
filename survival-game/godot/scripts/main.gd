@@ -189,6 +189,8 @@ func _command_selected_actor(mouse_position: Vector2) -> void:
 		)
 		# Die Ausgabe macht die Auftragserstellung während des Prototyps sichtbar.
 		print("Neuer Auftrag: ", job_id)
+		if selected_actor.assign_job(job_id):
+			return
 
 	# Der ausgewählte Bewohner entscheidet mit seinem NavigationAgent3D selbst,
 	# welchen begehbaren Weg er zu dieser Position nimmt.

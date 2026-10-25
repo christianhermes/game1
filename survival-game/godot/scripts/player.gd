@@ -21,6 +21,9 @@ var can_move := true
 # unabhängig vom Basis-/Charaktermodus Bewegung sperren können.
 var direct_control_enabled := true
 
+# ID des aktuell übernommenen Auftrags. -1 bedeutet, dass kein Auftrag aktiv ist.
+var current_job_id := -1
+
 # Die Hotbar meldet hierhin, welcher Gegenstand gerade ausgewählt ist.
 var selected_item_id: StringName = &""
 
@@ -71,8 +74,8 @@ func set_move_target(target_position: Vector3) -> void:
 	has_move_target = true
 
 
-# Beendet den aktuellen Laufauftrag. Der gespeicherte Status verhindert, dass
-# ein alter Auftrag beim nächsten Wechsel in den Basismodus fortgesetzt wird.
+# Beendet nur die aktuelle Bewegung. Die spätere Auftragslogik entscheidet
+# separat, ob der zugehörige Auftrag fortgesetzt oder abgebrochen wird.
 func cancel_move_target() -> void:
 	has_move_target = false
 	velocity = Vector3.ZERO
@@ -132,6 +135,8 @@ func _update_autonomous_movement() -> void:
 
 	if navigation_agent.is_navigation_finished():
 		has_move_target = false
+		velocity = Vector3.ZERO
+		_complete_current_job()
 		return
 
 	# Der NavigationAgent3D liefert in jedem Physikschritt den nächsten Punkt
@@ -224,3 +229,47 @@ func has_selected_item(required_item_id: StringName) -> bool:
 		selected_item_id == required_item_id
 		and inventory.get_amount(required_item_id) > 0
 	)
+# Übernimmt einen passenden offenen Auftrag, startet seinen Status und setzt
+# die gespeicherte Zielposition als autonomes Bewegungsziel.
+func assign_job(job_id: int) -> bool:
+	var job = SettlementJobManager.get_job(job_id)
+	if job.is_empty():
+		return false
+	if job["worker_id"] != worker_id:
+		return false
+	if !SettlementJobManager.start_job(job_id):
+		return false
+
+	current_job_id = job_id
+	set_move_target(job["target_position"])
+	return true
+
+
+# Löst eine gespeicherte, szenenunabhängige Ziel-ID wieder zu dem aktuell
+# geladenen Weltobjekt aus der Gruppe job_targets auf.
+func _find_job_target(target_id: StringName) -> Node3D:
+	var targets = get_tree().get_nodes_in_group("job_targets")
+	for target in targets:
+		if target.has_method("get_job_target_id"):
+			if target.get_job_target_id() == target_id:
+				return target
+
+	return null
+
+
+# Führt den aktiven Auftrag nach Erreichen seines Bewegungsziels aus. Ein
+# PICKUP-Auftrag interagiert mit dem geladenen Ziel und wird danach beendet.
+func _complete_current_job() -> void:
+	var target = null
+	if current_job_id < 0:
+		return
+	var job = SettlementJobManager.get_job(current_job_id)
+	if job.is_empty():
+		current_job_id = -1
+		return
+	if job["type"] == SettlementJobManager.JobType.PICKUP:
+		target = _find_job_target(job["target_id"])
+	if target != null and target.has_method("interact"):
+		target.call("interact", self)
+	if SettlementJobManager.finish_job(current_job_id):
+		current_job_id = -1
