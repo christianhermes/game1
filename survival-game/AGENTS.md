@@ -13,6 +13,49 @@ was bereits implementiert wurde.
 
 
 ============================================================
+AKTUALISIERTER VERBINDLICHER DESIGNRAHMEN – 2026-10-25
+============================================================
+
+DIESE NEUEREN BESCHLÜSSE HABEN VORRANG VOR ÄLTEREN
+THIRD-PERSON-, ESEL-, NPC-SPÄTER- UND BASE-DEFENSE-PASSAGEN
+WEITER UNTEN. Für Details siehe ENTWICKLUNGSPLAN.md, Abschnitte 1 und 4.
+
+- BASIS: stilisierte Low-Poly-3D-Ruinenstadt, isometrische
+  Going-Medieval-artige Kamera, Mausauswahl, Bauplanung,
+  NPC-Aufträge statt permanenter direkter Charaktersteuerung.
+- SPIELERFIGUR: erster autonom arbeitender Siedlungsbewohner
+  mit denselben Auftragsmechaniken wie spätere NPCs.
+- ABENTEUER: dieselbe Figur wird direkt gesteuert, in
+  Stardew-Valley-artiger Top-down-/Schrägansicht; 3D bleibt
+  vorläufig bestehen.
+- BASIS LÄUFT WÄHREND EXPEDITIONEN WEITER: NPC-Arbeit,
+  Transporte, Pflanzen und Produktion. Abwesender Held
+  kann nicht gleichzeitig in der Basis arbeiten. Vereinfachte
+  Hintergrundsimulation ist zulässig.
+- ARBEIT/LOGISTIK: NPCs bergen, sammeln, bauen, transportieren,
+  bewirtschaften und bedienen aktive Werkstationen. Physische
+  Kisten und reale Transporte bleiben Pflicht.
+- KEIN ESEL IM KERNSPIEL: Esel, Kühe, Hühner und weitere
+  Nutztiere sind mögliche spätere Erweiterungen.
+- NPC-TIEFE B: überschaubare individuelle Fähigkeiten,
+  Prioritäten, Vorlieben und wenige Bedürfnisse. Neue
+  Bewohner reisen an oder werden durch Expeditionen/Quests
+  gewonnen; besondere ehemalige Bewohner können Hinweise
+  und Fähigkeiten mitbringen.
+- STARTWELT: zerstörte Stadt; Ruinen können Ressourcen,
+  restaurierbare Gebäude, Wege und Fundstellen enthalten.
+- STIMMUNG: gemütlicher Wiederaufbau mit düsterer Vergangenheit.
+  Ermittlung als spätere Mechanik denkbar (Hinweise, Zeugnisse,
+  Ermittlungsbuch), aber konkrete Story, Täter und Figuren
+  sind ausdrücklich NICHT beschlossen.
+- BASISANGRIFFE: sehr spät, zunächst isometrisch mit NPCs.
+  Direkte Übernahme des Helden während Schlachten erst
+  viel später optional.
+- ENTWICKLUNG: zuerst Godot-Iststand prüfen, dann isometrische
+  Kamera/Maussteuerung und einen autonomen Arbeitsauftrag
+  als kleinen vertikalen Schnitt. Keine ungefragten Änderungen.
+
+============================================================
 AKTUELLEN PROJEKTSTAND BESTIMMEN
 ============================================================
 
@@ -471,9 +514,9 @@ Der Ausbau der Basis darf nicht allein dazu führen,
 dass unverhältnismäßig stärkere Angriffe entstehen
 und sich Verbesserungen wie eine Bestrafung anfühlen.
 
-Der Spieler kämpft während Angriffen selbst mit.
-
-Die Verteidigungsanlagen und NPCs unterstützen ihn.
+Für die erste Basisverteidigung bleiben Kamera und Steuerung isometrisch;
+NPCs verteidigen anhand von Befehlen. Direkte Spielerübernahme
+während Angriffen ist eine optionale, sehr späte Erweiterung.
 
 Ein guter Angriff erzeugt Entscheidungen:
 
