@@ -1,3 +1,5 @@
+> **Dokumentstatus (2026-10-25):** Historische, aufgabenbezogene Lern- und Testnotizen; einzelne Schritte können inzwischen implementiert oder noch ungetestet sein. Für aktuelle Spielentscheidungen siehe [SPIELVISION.md](SPIELVISION.md); für neue Aufgaben [ENTWICKLUNGSPLAN.md](ENTWICKLUNGSPLAN.md). Beschriebene Fertigstellungen nicht ungeprüft übernehmen.
+
 # Offline-Aufgaben: Vollständiger zeitgesteuerter Bauauftrag
 
 ## Aktueller Meilenstein: Ein Auftrag baut eine Holzmauer vollständig
