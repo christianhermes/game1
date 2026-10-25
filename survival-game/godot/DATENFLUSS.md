@@ -1,3 +1,5 @@
+> **Dokumentstatus (2026-10-25):** Godot-Lernreferenz zum beschriebenen Inventar-/Farming-Datenfluss, **keine** vollständige Architekturkarte des aktuellen Spiels. Für aktuelle Spielentscheidungen siehe [SPIELVISION.md](../SPIELVISION.md); für neue Aufgaben [ENTWICKLUNGSPLAN.md](../ENTWICKLUNGSPLAN.md). Beschriebene Fertigstellungen nicht ungeprüft übernehmen.
+
 # Datenfluss des aktuellen Spiel-Prototyps
 
 Diese Datei erklärt, **wo die Daten im aktuellen Projekt entstehen, wem sie
