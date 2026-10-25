@@ -42,6 +42,21 @@ WEITER UNTEN. Für Details siehe ENTWICKLUNGSPLAN.md, Abschnitte 1 und 4.
   Bewohner reisen an oder werden durch Expeditionen/Quests
   gewonnen; besondere ehemalige Bewohner können Hinweise
   und Fähigkeiten mitbringen.
+- FUNKTIONSRÄUME (REGEL C): Ein geschlossener Raum kann genau
+  eine Hauptfunktion (z. B. Schmiede, Küche, Zimmermannswerkstatt)
+  haben; andere Tätigkeiten und Stationen bleiben erlaubt.
+  Spezialisierung setzt bestimmte nutzbare Raumobjekte voraus;
+  genaue Anforderungen/Boni sind noch offen.
+- ARBEITSZUWEISUNG: NPCs werden Räumen bzw. konkreten
+  Arbeitsplätzen zugeteilt und führen Produktionsaufträge aus.
+  Parallelität richtet sich nach vorhandenen Arbeitsplätzen.
+- RAUMLAGER: echte Kisten/Regale mit lokalem Inventar,
+  kein unsichtbares gemeinsames Rauminventar. Transport-NPCs
+  füllen Bedarf auf; andernfalls holen Handwerker selbst
+  Material. Blockaden und fehlende Ressourcen anzeigen.
+- SPÄTER: Produktionsketten, Reihenfolge der Räume,
+  automatische Zielbestände und optional Transporttiere.
+  Diese Features nicht vorzeitig implementieren.
 - STARTWELT: zerstörte Stadt; Ruinen können Ressourcen,
   restaurierbare Gebäude, Wege und Fundstellen enthalten.
 - STIMMUNG: gemütlicher Wiederaufbau mit düsterer Vergangenheit.
