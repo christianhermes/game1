@@ -15,7 +15,7 @@ Bewohner vorhandenen Materialien und führt anschließend sichtbare
 Hammerschläge mit zeitlichem Abstand aus. Der Auftrag bleibt bis zum Ende
 aktiv und lässt sich durch einen neuen Befehl abbrechen.
 
-### Aktuell: Aufgabe 19 – alle Baumaterialien in einem Auftrag liefern
+### Abgeschlossen: Aufgabe 19 – alle Baumaterialien in einem Auftrag liefern
 
 Datei: `godot/scripts/building/construction_site.gd`.
 
@@ -43,7 +43,7 @@ Test nach Aufgabe 19:
 3. Derselbe Auftrag darf zunächst höchstens einen Arbeitsschritt ausführen.
 4. Godot darf keinen Parser- oder Laufzeitfehler melden.
 
-### Danach: Aufgabe 20 – laufenden Auftrag eindeutig prüfen
+### Abgeschlossen: Aufgabe 20 – laufenden Auftrag eindeutig prüfen
 
 Datei: `godot/scripts/player.gd`.
 
@@ -65,7 +65,7 @@ Test nach Aufgabe 20:
    liefern; nach Abschluss oder Abbruch `false`.
 3. Eine vorübergehende `print()`-Ausgabe nach dem Test wieder entfernen.
 
-### Danach: Aufgabe 21 – sichtbare Hammerschläge über Zeit ausführen
+### Abgeschlossen: Aufgabe 21 – sichtbare Hammerschläge über Zeit ausführen
 
 Datei: `godot/scripts/building/construction_site.gd`.
 
@@ -89,7 +89,7 @@ Die Funktion liefert:
 Aufgabe 21 ist erst nach Aufgabe 22 vollständig im Spiel testbar, weil der
 Player die asynchrone Funktion zunächst noch aufrufen und abwarten muss.
 
-### Danach: Aufgabe 22 – BUILD-Auftrag abwarten und korrekt abschließen
+### Implementiert, manuell zu testen: Aufgabe 22 – BUILD-Auftrag abwarten und korrekt abschließen
 
 Datei: `godot/scripts/player.gd`, Funktion `_complete_current_job()`.
 
