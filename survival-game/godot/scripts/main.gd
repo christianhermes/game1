@@ -84,6 +84,12 @@ func _input(event: InputEvent) -> void:
 			if get_viewport().gui_get_hovered_control() != null:
 				return
 
+			# Im Baumodus platziert der Linksklick eine Baustelle und darf nicht
+			# zusätzlich die normale Auswahl in der Welt auslösen.
+			if build_manager.is_build_mode_active():
+				build_manager.try_place_construction_site()
+				get_viewport().set_input_as_handled()
+				return
 			_select_at_mouse(event.position)
 			get_viewport().set_input_as_handled()
 			return

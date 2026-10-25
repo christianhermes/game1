@@ -259,7 +259,7 @@ mesh = SubResource("BoxMesh_lfxu0")
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1512420207]
 navigation_mesh = SubResource("NavigationMesh_lfxu0")
 
-[node name="GroundBody" type="StaticBody3D" parent="NavigationRegion3D" unique_id=382104567]
+[node name="GroundBody" type="StaticBody3D" parent="NavigationRegion3D" unique_id=382104567 groups=["build_surface"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 
 [node name="GroundCollision" type="CollisionShape3D" parent="NavigationRegion3D/GroundBody" unique_id=766814386]

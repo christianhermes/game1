@@ -1,4 +1,133 @@
-# Offline-Aufgaben: Ressourcen und Produktionswarteschlange
+# Offline-Aufgaben: Vollständiger zeitgesteuerter Bauauftrag
+
+## Aktueller Meilenstein: Ein Auftrag baut eine Holzmauer vollständig
+
+Die Aufgaben 11 bis 18 sind abgeschlossen und im Spiel geprüft:
+
+- Holzmauer-Baustellen lassen sich im 2-Meter-Raster platzieren.
+- Jede Baustelle besitzt eine stabile Ziel-ID und erzeugt einen BUILD-Auftrag.
+- Der ausgewählte Bewohner läuft selbstständig zur Baustelle.
+- Material und Werkzeug werden direkt im Inventar geprüft, unabhängig von der
+  ausgewählten Hotbar-Position.
+
+Das Ziel der Aufgaben 19 bis 22: Ein einziger Rechtsklick liefert alle beim
+Bewohner vorhandenen Materialien und führt anschließend sichtbare
+Hammerschläge mit zeitlichem Abstand aus. Der Auftrag bleibt bis zum Ende
+aktiv und lässt sich durch einen neuen Befehl abbrechen.
+
+### Aktuell: Aufgabe 19 – alle Baumaterialien in einem Auftrag liefern
+
+Datei: `godot/scripts/building/construction_site.gd`.
+
+Der ausführliche TODO-Kommentar vor `interact()` beschreibt zwei neue Helfer:
+
+- `_has_all_materials()` prüft alle Einträge des Rezepts.
+- `_deliver_all_materials(actor)` überträgt mit einer `while`-Schleife alle
+  noch fehlenden Stücke aus dem Bewohnerinventar.
+
+Wichtige Regel: Wenn der Bewohner nur einen Teil der benötigten Materialien
+besitzt, wird dieser Teil trotzdem abgeliefert. Die Funktion liefert danach
+`false`, und ein späterer Auftrag kann die restlichen Materialien ergänzen.
+Bereits abgeliefertes Material geht nicht verloren.
+
+`interact()` soll anschließend nur noch:
+
+1. `_deliver_all_materials(actor)` aufrufen,
+2. bei `false` abbrechen,
+3. bei `true` einmal `_try_build(actor)` aufrufen.
+
+Test nach Aufgabe 19:
+
+1. Bewohner muss drei Holz im Inventar besitzen.
+2. Ein Rechtsklick auf die Baustelle muss sofort `Wood: 3/3` ergeben.
+3. Derselbe Auftrag darf zunächst höchstens einen Arbeitsschritt ausführen.
+4. Godot darf keinen Parser- oder Laufzeitfehler melden.
+
+### Danach: Aufgabe 20 – laufenden Auftrag eindeutig prüfen
+
+Datei: `godot/scripts/player.gd`.
+
+Ergänze `is_current_job(job_id: int) -> bool` an der markierten Stelle. Die
+Funktion liefert nur dann `true`, wenn:
+
+- `current_job_id` mit dem Parameter übereinstimmt,
+- der Auftrag im Manager noch existiert und
+- sein Status `SettlementJobManager.JobStatus.RUNNING` ist.
+
+Warum reicht der Vergleich der IDs allein nicht? Ein Auftrag könnte im Manager
+bereits abgebrochen sein, obwohl ein asynchroner Timer noch auf sein Signal
+wartet. Beide Zustände müssen deshalb geprüft werden.
+
+Test nach Aufgabe 20:
+
+1. Godot starten und einen gewöhnlichen Pickup-Auftrag erteilen.
+2. Während des laufenden Auftrags muss die Funktion für dessen ID `true`
+   liefern; nach Abschluss oder Abbruch `false`.
+3. Eine vorübergehende `print()`-Ausgabe nach dem Test wieder entfernen.
+
+### Danach: Aufgabe 21 – sichtbare Hammerschläge über Zeit ausführen
+
+Datei: `godot/scripts/building/construction_site.gd`.
+
+Ergänze die im TODO beschriebene asynchrone Funktion:
+
+```gdscript
+func perform_build_job(actor: Node3D, job_id: int) -> bool:
+	# Materialien liefern, Werkzeug prüfen und zeitgesteuert arbeiten.
+```
+
+`await get_tree().create_timer(0.75).timeout` pausiert nur diese Funktion. Das
+Spiel, die Kamera und andere Nodes laufen weiter. Prüfe den aktiven Auftrag
+sowohl vor als auch nach jedem `await`, damit ein neuer Befehl keinen alten
+Hammerschlag mehr ausführt.
+
+Die Funktion liefert:
+
+- `true`, wenn die Wand vollständig gebaut wurde,
+- `false`, wenn Material oder Werkzeug fehlt oder der Auftrag abgebrochen wurde.
+
+Aufgabe 21 ist erst nach Aufgabe 22 vollständig im Spiel testbar, weil der
+Player die asynchrone Funktion zunächst noch aufrufen und abwarten muss.
+
+### Danach: Aufgabe 22 – BUILD-Auftrag abwarten und korrekt abschließen
+
+Datei: `godot/scripts/player.gd`, Funktion `_complete_current_job()`.
+
+BUILD erhält einen eigenen Zweig vor der bisherigen synchronen
+`interact()`-Behandlung. Speichere die aktive Job-ID vor `await`, warte auf
+`target.perform_build_job(self, active_job_id)` und prüfe danach erneut, ob
+dieselbe Job-ID noch aktiv ist.
+
+- Ergebnis `true`: `finish_job(active_job_id)`.
+- Ergebnis `false`: `cancel_job(active_job_id)`.
+- Wurde zwischenzeitlich ein neuer Auftrag vergeben, darf der alte Ablauf
+  weder den neuen Auftrag beenden noch `current_job_id` zurücksetzen.
+
+Abschlusstest nach Aufgabe 22:
+
+1. Holz per Pickup-Auftrag einsammeln.
+2. Holzmauer-Baustelle platzieren und Baumodus beenden.
+3. Bewohner auswählen und die Baustelle genau einmal rechtsklicken.
+4. Der Bewohner läuft zur Baustelle und liefert alle drei Holz.
+5. Danach steigt die Arbeitsanzeige ungefähr alle 0,75 Sekunden von 0 bis 5.
+6. Erst nach dem letzten Schritt erscheint die fertige Holzmauer.
+7. Zweiten Test starten und während der Bauarbeit ein anderes Laufziel
+   rechtsklicken: Der Bewohner muss die Arbeit spätestens vor dem nächsten
+   Hammerschlag beenden und dem neuen Befehl folgen.
+8. Ein alter asynchroner Ablauf darf den neuen Auftrag nicht abschließen.
+
+Bewusst noch nicht Teil dieses Meilensteins:
+
+- Material selbstständig aus Kisten holen oder reservieren.
+- Einen blockierten Auftrag automatisch wieder aufnehmen.
+- Mehrere Bewohner gleichzeitig an einer Baustelle.
+- Animation, Ton und sichtbarer Hammer.
+- Drehen, Abbrechen und Materialrückgabe einer Baustelle.
+- Speichern und Laden dynamisch platzierter Baustellen.
+
+---
+
+# Abgeschlossene Aufgaben: Ressourcen und Produktionswarteschlange
 
 Die Aufgaben 1 bis 10 sind abgeschlossen. Das Workstation-Menü besitzt damit
 gestapelte, nach Priorität sortierbare und einzeln abbrechbare

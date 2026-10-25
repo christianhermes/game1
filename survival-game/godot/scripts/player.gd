@@ -199,6 +199,15 @@ func try_use_selected_item(required_item_id: StringName, amount: int) -> bool:
 	return inventory.remove_item(required_item_id, amount)
 
 
+# Autonome Aufträge verwenden Gegenstände direkt aus dem Inventar und sind
+# dadurch unabhängig von der aktuell ausgewählten Hotbar-Position.
+func try_use_item(item_id: StringName, amount: int) -> bool:
+	return inventory.remove_item(item_id, amount)
+
+
+func has_item(item_id: StringName, amount: int = 1) -> bool:
+	return inventory.get_amount(item_id) >= amount
+
 func _try_consume_selected_item() -> void:
 	match selected_item_id:
 		&"wheat":
@@ -257,6 +266,22 @@ func _find_job_target(target_id: StringName) -> Node3D:
 	return null
 
 
+# TODO AUFGABE 20: Ermögliche einer laufenden Bauarbeit, einen Abbruch zu
+# erkennen. Ergänze die Funktion:
+#
+#   is_current_job(job_id: int) -> bool
+#
+# Sie liefert nur dann true, wenn:
+# - current_job_id genau der übergebenen ID entspricht,
+# - der Auftrag im SettlementJobManager noch existiert und
+# - sein Status SettlementJobManager.JobStatus.RUNNING ist.
+#
+# Hole den Auftrag mit get_job(job_id). Ein leeres Dictionary ergibt false.
+# Diese Abfrage nutzt ConstructionSite vor und nach jedem Timer. Dadurch stoppt
+# die Arbeit spätestens am nächsten Hammerschlag, wenn ein neuer Rechtsklick
+# cancel_current_job() ausgelöst hat.
+
+
 # Führt einen zielgebundenen Auftrag nach Erreichen seines Bewegungsziels aus.
 # Sowohl lose Pickups als auch Ressourcenquellen verwenden ihre eigene
 # interact()-Methode und werden danach im Manager abgeschlossen.
@@ -269,12 +294,38 @@ func _complete_current_job() -> void:
 		current_job_id = -1
 		return
 	match job["type"]:
-		SettlementJobManager.JobType.PICKUP, SettlementJobManager.JobType.EXTRACT_RESOURCE:
+		# Alle zielgebundenen Aufträge lösen ihre gespeicherte Welt-ID erst nach
+		# dem Laufweg wieder zum aktuell geladenen Node auf.
+		SettlementJobManager.JobType.PICKUP, SettlementJobManager.JobType.EXTRACT_RESOURCE, SettlementJobManager.JobType.BUILD:
 			target = _find_job_target(job["target_id"])
+
 	if target != null and target.has_method("interact"):
 		target.call("interact", self)
 	if SettlementJobManager.finish_job(current_job_id):
 		current_job_id = -1
+
+
+# TODO AUFGABE 22: Warte bei BUILD auf den vollständigen Bauvorgang.
+#
+# Baue in _complete_current_job() einen eigenen BUILD-Zweig VOR der bisherigen
+# interact()-Behandlung ein:
+#
+# 1. Speichere die aktuelle ID vor dem ersten await als active_job_id.
+# 2. Prüfe, ob target die Methode perform_build_job besitzt. Falls nicht:
+#    Auftrag abbrechen, current_job_id auf -1 setzen und return.
+# 3. Warte auf das Ergebnis:
+#      var building_finished: bool = await target.perform_build_job(
+#          self,
+#          active_job_id,
+#      )
+# 4. Prüfe nach await, ob current_job_id noch active_job_id entspricht.
+#    Wenn nicht, wurde inzwischen ein anderer Befehl erteilt: sofort return.
+# 5. Bei building_finished == true den Auftrag mit finish_job() abschließen.
+#    Bei false mit cancel_job() abbrechen.
+# 6. Danach current_job_id = -1 setzen und return.
+#
+# PICKUP und EXTRACT_RESOURCE benutzen weiterhin den vorhandenen synchronen
+# interact()-Pfad. BUILD darf diesen Pfad danach nicht zusätzlich durchlaufen.
 
 
 # Bricht einen aktiven Auftrag im Manager ab und beendet unabhängig davon auch

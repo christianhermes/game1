@@ -7,6 +7,9 @@ enum JobType {
 	MOVE,
 	PICKUP,
 	EXTRACT_RESOURCE,
+	# Ein BUILD-Auftrag lässt einen Bewohner eine Baustelle beliefern und
+	# anschließend die erforderliche Bauarbeit ausführen.
+	BUILD,
 }
 
 
