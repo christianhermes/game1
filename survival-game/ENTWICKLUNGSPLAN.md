@@ -20,7 +20,7 @@ Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen t
 
 **Statusnotation:** `[ ]` ungeprüft/offen, `[~]` teilweise, `[x]` durch Codeprüfung und möglichst Laufzeittest bestätigt. Status niemals allein aufgrund dieses Dokuments setzen. Jede Phase muss am aktuellen Repository erneut validiert werden.
 
-**Abgrenzung:** Der ältere HTML/CSS/JS-Browser-Prototyp ist Referenz für Gameplay-Ideen, nicht die Zielarchitektur. Aktive Weiterentwicklung erfolgt in Godot. Keine direkte 1:1-Portierung der JavaScript-Klassen.
+**Abgrenzung:** Die alten HTML/CSS/JavaScript-Dateien werden vollständig ignoriert: nicht lesen, ändern oder testen und nicht als Referenz für neue Systeme verwenden. Die aktive Entwicklung erfolgt ausschließlich in Godot, solange der Nutzer den Browser-Prototyp nicht ausdrücklich wieder aktiviert.
 
 ## 1. Verbindliche Spielregeln für die Planung (aktualisiert 2026-10-25)
 

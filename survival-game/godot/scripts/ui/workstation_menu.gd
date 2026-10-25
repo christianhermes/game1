@@ -73,7 +73,7 @@ func _on_recipe_button_pressed(selected_recipe: ProcessingRecipe) -> void:
 
 
 # Baut die sichtbaren Queue-Zeilen aus einer Kopie der Stationsdaten neu auf.
-# Jeder ProductionOrder wird dabei zu einer eigenen Zeile mit Abbrechen-Button.
+# Jeder ProductionOrder erhält eine Zeile mit Prioritäts- und Abbruchsteuerung.
 func _refresh_queue() -> void:
 	for old_row in queue_entries.get_children():
 		old_row.queue_free()
@@ -100,56 +100,63 @@ func _refresh_queue() -> void:
 			queue_entries.add_child(row)
 
 
+# Erzeugt die Anzeige und Steuerung eines priorisierten Produktionsauftrags.
+# Die stabile Auftrags-ID bleibt auch nach einer Verschiebung gültig.
 func _create_queue_row(
 	order: ProductionOrder,
 	display_index: int,
 	queue_size: int,
 ) -> HBoxContainer:
-	# TODO AUFGABE 9: Baue eine sichtbare Zeile für einen priorisierten Auftrag.
-	#
-	# Gewünschte Darstellung:
-	#   1. Mehl mahlen x3    [Hoch] [Runter] [Abbrechen]
-	#
-	# Vorgehen:
-	# 1. Prüfe order und order.recipe auf null. Falls eines null ist: return null.
-	# 2. Erzeuge mit HBoxContainer.new() eine Variable row.
-	# 3. Erzeuge mit Label.new() eine Variable order_label.
-	# 4. Setze order_label.text mit dem Format "%d. %s x%d" und diesen Werten:
-	#      display_index, order.recipe.display_name, order.amount
-	# 5. Setze order_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL,
-	#    damit der Text den freien Platz vor dem Button einnimmt.
-	# 6. Füge order_label mit row.add_child(order_label) zur Zeile hinzu.
-	# 7. Erzeuge einen Hoch-Button. Setze seinen Text auf "Hoch" und verbinde:
-	#      up_button.pressed.connect(
-	#          _on_move_order_pressed.bind(order.id, -1),
-	#      )
-	#    Setze up_button.disabled = display_index == 1.
-	# 8. Erzeuge entsprechend einen Runter-Button mit direction 1.
-	#    Deaktiviere ihn mit display_index == queue_size.
-	# 9. Erzeuge einen Button, setze seinen Text auf "Abbrechen" und verbinde:
-	#      cancel_button.pressed.connect(
-	#          _on_cancel_order_pressed.bind(order.id),
-	#      )
-	# 10. Füge alle drei Buttons in dieser Reihenfolge zur row hinzu und gib row zurück.
-	#
-	# bind() speichert die stabile ID und beim Verschieben zusätzlich die Richtung
-	# im jeweiligen Button. Die Buttons arbeiten dadurch nicht mit instabilen Indizes.
-	return null
+	if order == null or order.recipe == null:
+		return null
+
+	var row := HBoxContainer.new()
+	var order_label := Label.new()
+	order_label.text = "%d. %s x%d" % [
+		display_index,
+		order.recipe.display_name,
+		order.amount,
+	]
+	order_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(order_label)
+
+	var up_button := Button.new()
+	up_button.text = "Hoch"
+	up_button.pressed.connect(
+		_on_move_order_pressed.bind(order.id, -1),
+	)
+	up_button.disabled = display_index == 1
+
+	var down_button := Button.new()
+	down_button.text = "Runter"
+	down_button.pressed.connect(
+		_on_move_order_pressed.bind(order.id, 1),
+	)
+	down_button.disabled = display_index == queue_size
+
+	var cancel_button := Button.new()
+	cancel_button.text = "Abbrechen"
+	cancel_button.pressed.connect(
+		_on_cancel_order_pressed.bind(order.id),
+	)
+
+	row.add_child(up_button)
+	row.add_child(down_button)
+	row.add_child(cancel_button)
+	return row
 
 
+# Lässt die Station den über seine stabile ID gewählten Auftrag entfernen.
+# Das Stationssignal aktualisiert die sichtbare Liste anschließend automatisch.
 func _on_cancel_order_pressed(order_id: int) -> void:
-	# TODO AUFGABE 10: Delegiere Abbrechen und Prioritätsänderung an die Station.
-	#
-	# 1. Wenn current_station null ist: return.
-	# 2. Rufe current_station.remove_queued_order(order_id) auf.
-	# 3. Kein direkter _refresh_queue()-Aufruf: Die Station sendet bei Erfolg
-	#    production_queue_changed und aktualisiert damit das Menü automatisch.
-	pass
+	if current_station == null:
+		return
+	current_station.remove_queued_order(order_id)
 
 
+# Übergibt die gewählte ID und Bewegungsrichtung an die Station. Das UI
+# verändert die zugrunde liegende Prioritätenliste nicht selbst.
 func _on_move_order_pressed(order_id: int, direction: int) -> void:
-	# TODO AUFGABE 10 (Fortsetzung):
-	# 1. Wenn current_station null ist: return.
-	# 2. Rufe current_station.move_queued_order(order_id, direction) auf.
-	# 3. Auch hier ist kein manueller _refresh_queue()-Aufruf erforderlich.
-	pass
+	if current_station == null:
+		return
+	current_station.move_queued_order(order_id, direction)

@@ -1,13 +1,13 @@
 # Offline-Aufgaben: Ressourcen und Produktionswarteschlange
 
-Die Aufgaben 1 bis 5 sind abgeschlossen. Die aktuell offenen Aufgaben 6 bis 10
-erweitern das Workstation-Menü um gestapelte, nach Priorität sortierbare und
-einzeln abbrechbare Produktionsaufträge.
+Die Aufgaben 1 bis 10 sind abgeschlossen. Das Workstation-Menü besitzt damit
+gestapelte, nach Priorität sortierbare und einzeln abbrechbare
+Produktionsaufträge.
 Starte nach jeder Aufgabe das Projekt und behebe Parserfehler, bevor du mit der
 nächsten Aufgabe beginnst. Fertige TODO-Kommentare werden durch dauerhafte
 Dokumentation ersetzt.
 
-## Aktuell: Aufgabe 6 – Wiederholungen im vorhandenen Rezeptauftrag stapeln
+## Abgeschlossen: Aufgabe 6 – Wiederholungen im Rezeptauftrag stapeln
 
 Datei: `godot/scripts/workstation/processing_station.gd`, Funktion
 `enqueue_recipe()`.
@@ -16,7 +16,7 @@ Jedes Rezept kommt höchstens einmal in der Liste vor. Ein erneuter Klick erhöh
 nur `amount` dieses Auftrags. Seine Position und damit seine Priorität bleibt
 unverändert.
 
-## Danach: Aufgabe 7 – Auftrag anhand seiner ID entfernen
+## Abgeschlossen: Aufgabe 7 – Auftrag anhand seiner ID entfernen
 
 Datei: `godot/scripts/workstation/processing_station.gd`, Funktion
 `remove_queued_order()`.
@@ -24,7 +24,7 @@ Datei: `godot/scripts/workstation/processing_station.gd`, Funktion
 Jeder Auftrag besitzt eine ID. Suche diese ID und entferne genau den gefundenen
 Eintrag, unabhängig davon, wo er in der Queue steht.
 
-## Danach: Aufgabe 8 – Priorität eines Auftrags verschieben
+## Abgeschlossen: Aufgabe 8 – Priorität eines Auftrags verschieben
 
 Datei: `godot/scripts/workstation/processing_station.gd`, Funktion
 `move_queued_order()`.
@@ -33,16 +33,15 @@ Verschiebe den gewählten Auftrag genau eine Position hoch oder herunter. Die
 Array-Reihenfolge ist gleichzeitig die Ausführungspriorität: Index 0 kommt
 immer zuerst, unabhängig von der Wiederholungsmenge.
 
-## Danach: Aufgabe 9 – sichtbare Prioritätszeile bauen
+## Abgeschlossen: Aufgabe 9 – sichtbare Prioritätszeile bauen
 
 Datei: `godot/scripts/ui/workstation_menu.gd`, Funktion `_create_queue_row()`.
 
-Erzeuge pro ProductionOrder eine Zeile mit Position, Rezeptname, Menge sowie
-Hoch-, Runter- und Abbrechen-Button. Der ausführliche TODO-Kommentar erklärt
-auch, wie der oberste beziehungsweise unterste Verschiebebutton deaktiviert
-wird.
+Jeder ProductionOrder erhält eine Zeile mit Position, Rezeptname, Menge sowie
+Hoch-, Runter- und Abbrechen-Button. Am oberen und unteren Listenrand ist die
+jeweils unmögliche Verschiebung deaktiviert.
 
-## Danach: Aufgabe 10 – Buttons an die Station delegieren
+## Abgeschlossen: Aufgabe 10 – Buttons an die Station delegieren
 
 Datei: `godot/scripts/ui/workstation_menu.gd`, Funktionen
 `_on_cancel_order_pressed()` und `_on_move_order_pressed()`.

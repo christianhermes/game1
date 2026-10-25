@@ -21,34 +21,27 @@ func get_available_recipes() -> Array[ProcessingRecipe]:
 	return result
 
 
+# Fügt dem vorhandenen Rezeptauftrag einen Produktionslauf hinzu. Ein neues
+# Rezept erhält genau einen Auftrag am Ende der Prioritätenliste und eine
+# stabile ID. Eine höhere Wiederholungsmenge verändert die Priorität nicht.
 func enqueue_recipe(recipe_to_add: ProcessingRecipe) -> bool:
-	# TODO AUFGABE 6: Füge einen Produktionslauf zum passenden Rezeptauftrag hinzu.
-	#
-	# Die beiden vorhandenen Prüfungen bleiben unverändert. Danach gilt:
-	#
-	# A) Jedes Rezept soll höchstens einmal in der Prioritätenliste vorkommen:
-	# 1. Laufe mit for order in production_queue über alle Aufträge.
-	# 2. Wenn order.recipe == recipe_to_add gilt:
-	#    - erhöhe order.amount um 1,
-	#    - löse production_queue_changed.emit() aus,
-	#    - gib sofort true zurück.
-	#
-	# B) Nur wenn das Rezept noch nicht vorhanden ist, entsteht ein neuer Auftrag:
-	# 3. Erzeuge einen ProductionOrder mit
-	#      ProductionOrder.new(next_order_id, recipe_to_add, 1)
-	# 4. Erhöhe next_order_id danach um 1.
-	# 5. Hänge den neuen Order mit production_queue.append(...) unten an.
-	# 6. Löse production_queue_changed.emit() aus und gib true zurück.
-	#
-	# Wichtig: Die Position des gefundenen Auftrags bleibt unverändert. Ein weiterer
-	# Klick erhöht nur seine Wiederholungsmenge und verändert nicht seine Priorität.
 	if recipe_to_add == null:
 		return false
 	var recipes = get_available_recipes()
 	if recipes.find(recipe_to_add) == -1:
 		return false
 
-	return false
+	for order in production_queue:
+		if order.recipe == recipe_to_add:
+			order.amount += 1
+			production_queue_changed.emit()
+			return true
+
+	var new_order := ProductionOrder.new(next_order_id, recipe_to_add, 1)
+	next_order_id += 1
+	production_queue.append(new_order)
+	production_queue_changed.emit()
+	return true
 
 
 # Das UI erhält eine Kopie, damit es die echte Warteschlange nicht versehentlich
@@ -57,45 +50,34 @@ func get_production_queue() -> Array[ProductionOrder]:
 	return production_queue.duplicate()
 
 
+# Entfernt genau den Auftrag mit der angegebenen stabilen ID. Array-Indizes
+# werden nicht als Identität verwendet, weil sie sich beim Sortieren verändern.
 func remove_queued_order(order_id: int) -> bool:
-	# TODO AUFGABE 7: Entferne genau den vom UI gewählten Auftrag über seine ID.
-	#
-	# Vorgehen:
-	# 1. Laufe mit for index in range(production_queue.size()) über die Queue.
-	# 2. Vergleiche production_queue[index].id mit order_id.
-	# 3. Bei Übereinstimmung:
-	#    - entferne den Eintrag mit production_queue.remove_at(index),
-	#    - löse production_queue_changed.emit() aus,
-	#    - gib true zurück.
-	# 4. Wurde nach der gesamten Schleife nichts gefunden, gib false zurück.
-	#
-	# Die ID statt des Array-Index zu übergeben ist wichtig: Nach dem Entfernen
-	# verschieben sich Indizes, die Identität der übrigen Aufträge bleibt gleich.
+	for index in range(production_queue.size()):
+		if production_queue[index].id == order_id:
+			production_queue.remove_at(index)
+			production_queue_changed.emit()
+			return true
 	return false
 
 
+# Verschiebt einen Auftrag genau eine Prioritätsstufe. Die Array-Reihenfolge ist
+# die Ausführungspriorität: Index 0 wird später zuerst berücksichtigt.
+# direction muss -1 für hoch oder 1 für runter sein.
 func move_queued_order(order_id: int, direction: int) -> bool:
-	# TODO AUFGABE 8: Verschiebe einen Auftrag in der Prioritätenliste.
-	#
-	# direction ist -1 für eine Position nach oben und 1 für eine Position
-	# nach unten. Andere Werte sind ungültig.
-	#
-	# Vorgehen:
-	# 1. Wenn direction weder -1 noch 1 ist, gib false zurück.
-	# 2. Laufe mit einem Index über production_queue.
-	# 3. Überspringe Einträge, deren id nicht order_id entspricht.
-	# 4. Berechne für den gefundenen Auftrag:
-	#      var target_index := index + direction
-	# 5. Prüfe mit target_index < 0 oder target_index >= production_queue.size(),
-	#    ob die neue Position außerhalb der Liste liegt. Dann: return false.
-	# 6. Entferne den Auftrag zunächst mit remove_at(index) und merke ihn vorher
-	#    in einer Variable.
-	# 7. Füge ihn mit production_queue.insert(target_index, order) wieder ein.
-	# 8. Löse production_queue_changed.emit() aus und gib true zurück.
-	# 9. Wurde die ID nicht gefunden, gib nach der Schleife false zurück.
-	#
-	# Die Array-Reihenfolge IST die Priorität: Index 0 wird später immer zuerst
-	# berücksichtigt, unabhängig von der Wiederholungsmenge seines Auftrags.
+	if direction != -1 and direction != 1:
+		return false
+	for index in range(production_queue.size()):
+		if production_queue[index].id != order_id:
+			continue
+		var target_index := index + direction
+		if target_index < 0 or target_index >= production_queue.size():
+			return false
+		var target = production_queue[index]
+		production_queue.remove_at(index)
+		production_queue.insert(target_index, target)
+		production_queue_changed.emit()
+		return true
 	return false
 
 

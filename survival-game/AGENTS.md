@@ -69,6 +69,9 @@ WEITER UNTEN. Für Details siehe ENTWICKLUNGSPLAN.md, Abschnitte 1 und 4.
 - ENTWICKLUNG: zuerst Godot-Iststand prüfen, dann isometrische
   Kamera/Maussteuerung und einen autonomen Arbeitsauftrag
   als kleinen vertikalen Schnitt. Keine ungefragten Änderungen.
+- PROJEKTFOKUS: Die alten HTML/CSS/JavaScript-Dateien vollständig
+  ignorieren. Nicht lesen, ändern, testen oder als Referenz verwenden,
+  solange der Nutzer sie nicht ausdrücklich wieder aktiviert.
 
 ============================================================
 AKTUELLEN PROJEKTSTAND BESTIMMEN

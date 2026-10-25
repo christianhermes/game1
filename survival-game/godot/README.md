@@ -1,9 +1,9 @@
 # Godot-Spielprototyp
 
-Dieser Ordner enthält den Godot-4-Prototyp für Charaktersteuerung,
-Basisübersicht, Interaktion, Farming, Verarbeitung und Bauen. Der frühere
-Browser-Prototyp im übergeordneten Ordner bleibt unverändert und dient nur noch
-als Referenz.
+Dieser Ordner enthält den aktiven Godot-4-Prototyp für Charaktersteuerung,
+Basisübersicht, Interaktion, Farming, Verarbeitung und Bauen. Die alten
+HTML/CSS/JavaScript-Dateien im übergeordneten Ordner werden vollständig
+ignoriert und dienen auch nicht mehr als Referenz.
 
 ## Starten
 
