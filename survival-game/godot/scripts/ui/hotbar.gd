@@ -13,6 +13,9 @@ signal selected_item_changed(item_id: StringName)
 # Index des aktuell ausgewählten Slots. Der erste Slot hat den Index 0.
 var selected_index: int = 0
 
+# Im Basismodus verwendet die Kamera das Mausrad zum Zoomen.
+var mouse_wheel_enabled := true
+
 # Beide Arrays benutzen denselben Index: slots[0] zeigt slot_item_ids[0] an.
 var slots: Array[Button] = []
 var slot_item_ids: Array[StringName] = []
@@ -21,7 +24,7 @@ var slot_item_ids: Array[StringName] = []
 # _input() erhält Tastatur- und Mausereignisse des Spiels.
 func _input(event: InputEvent) -> void:
 	# Mit dem Mausrad wird die Auswahl zyklisch verschoben.
-	if event is InputEventMouseButton and event.pressed:
+	if mouse_wheel_enabled and event is InputEventMouseButton and event.pressed:
 		var direction: String = ""
 
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
@@ -35,13 +38,18 @@ func _input(event: InputEvent) -> void:
 		elif direction == "down":
 			selected_index = wrapi(selected_index + 1, 0, slots.size())
 
-		select_slots(selected_index)
+		if direction != "":
+			select_slots(selected_index)
 
 	# Die Zahlentasten 1 bis 9 wählen den entsprechenden Slot direkt aus.
 	if event is InputEventKey and event.pressed and not event.echo:
 		var slot_index: int = event.keycode - KEY_1
 		if slot_index < slots.size() and slot_index >= 0:
 			select_slots(slot_index)
+
+
+func set_mouse_wheel_enabled(enabled: bool) -> void:
+	mouse_wheel_enabled = enabled
 
 
 # Sammelt die Button-Kinder ein und verbindet alle benötigten Signale.

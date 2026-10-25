@@ -36,7 +36,7 @@ main.tscn
 │   └── bekommt wheat.tres als CropData zugewiesen
 │
 └── ItemPickups (item_pickup.gd)
-    └── besitzen jeweils item_id und amount
+	└── besitzen jeweils item_id und amount
 ```
 
 Der wichtigste Grundsatz lautet:
@@ -110,8 +110,8 @@ Nicht jede Verbindung steht sichtbar in einem Skript. Einige befinden sich in
 
 ```text
 UI/Hotbar.inventory
-        │
-        └──> Player/Inventory
+		│
+		└──> Player/Inventory
 ```
 
 In der Szene steht dafür sinngemäß:
@@ -130,8 +130,8 @@ inventory.inventory_changed.connect(_on_inventory_changed)
 
 ```text
 Hotbar.selected_item_changed
-        │
-        └──> Player._on_hotbar_selected_item_changed(...)
+		│
+		└──> Player._on_hotbar_selected_item_changed(...)
 ```
 
 Diese Signalverbindung wurde ebenfalls in `main.tscn` gespeichert. Deshalb
@@ -141,8 +141,8 @@ muss sie nicht noch einmal per Code hergestellt werden.
 
 ```text
 FarmPlot.crop_data
-        │
-        └──> data/crops/wheat.tres
+		│
+		└──> data/crops/wheat.tres
 ```
 
 `wheat.tres` enthält aktuell:
@@ -189,10 +189,10 @@ Wichtige Vorbereitungen:
 
 ```text
 Main._ready()
-    │
-    └──> Player.receive_item(wheat_seed, 3)
-              │
-              └──> Inventory.add_item(wheat_seed, 3)
+	│
+	└──> Player.receive_item(wheat_seed, 3)
+			  │
+			  └──> Inventory.add_item(wheat_seed, 3)
 ```
 
 Das Inventar berechnet:
@@ -211,9 +211,9 @@ items = { wheat_seed: 3 }
 
 ```text
 Inventory
-    │
-    │ inventory_changed(wheat_seed, 3)
-    ▼
+	│
+	│ inventory_changed(wheat_seed, 3)
+	▼
 Hotbar._on_inventory_changed(wheat_seed, 3)
 ```
 
@@ -259,11 +259,11 @@ wandelt dieses Ereignis in einen Slot-Index um.
 
 ```text
 Mausrad / Zahlentaste
-        │
-        ▼
+		│
+		▼
 Hotbar._input(event)
-        │
-        ▼
+		│
+		▼
 Hotbar.select_slots(index)
 ```
 
@@ -277,11 +277,11 @@ Hotbar.select_slots(index)
 
 ```text
 slot_item_ids[selected_index]
-        │
-        ▼
+		│
+		▼
 selected_item_changed(item_id)
-        │
-        ▼
+		│
+		▼
 Player.selected_item_id
 ```
 
@@ -328,22 +328,22 @@ Beispiel: Der Spieler interagiert mit dem Holz-Pickup.
 
 ```text
 Player._try_interact()
-        │
-        ▼
+		│
+		▼
 ItemPickup.interact(Player)
-        │
-        ▼
+		│
+		▼
 Player.receive_item(wood, 1)
-        │
-        ▼
+		│
+		▼
 Inventory.add_item(wood, 1)
-        │
-        ├──> items[wood] wird geändert
-        │
-        └──> inventory_changed(wood, neue_menge)
-                        │
-                        ▼
-                 Hotbar aktualisiert Slot
+		│
+		├──> items[wood] wird geändert
+		│
+		└──> inventory_changed(wood, neue_menge)
+						│
+						▼
+				 Hotbar aktualisiert Slot
 ```
 
 Erst nachdem `receive_item()` aufgerufen wurde, entfernt sich das Pickup mit
@@ -408,11 +408,11 @@ Dadurch wird das Pflanzen als eine kleine Transaktion behandelt:
 
 ```text
 passendes Saatgut ausgewählt UND vorhanden
-                    │
-          ┌─────────┴─────────┐
-          │                   │
-         ja                  nein
-          │                   │
+					│
+		  ┌─────────┴─────────┐
+		  │                   │
+		 ja                  nein
+		  │                   │
  Saatgut verbrauchen      nichts verändern
  Wachstum starten         Hinweis anzeigen
 ```
@@ -438,11 +438,11 @@ jedem Bild ab, solange sein Zustand `GROWING` ist:
 
 ```text
 GrowthTimer.time_left
-        │
-        ▼
+		│
+		▼
 FarmPlot._process()
-        │
-        ▼
+		│
+		▼
 StateLabel.text = "Wächst\n... s"
 ```
 
@@ -450,12 +450,12 @@ Wenn der Timer abläuft, sendet Godot sein eingebautes `timeout`-Signal:
 
 ```text
 GrowthTimer.timeout
-        │
-        ▼
+		│
+		▼
 FarmPlot._on_growth_finished()
-        │
-        ├── state = READY
-        └── _update_visuals()
+		│
+		├── state = READY
+		└── _update_visuals()
 ```
 
 Das Feld wird gelb und zeigt `Erntereif` an.
@@ -471,21 +471,21 @@ Wenn das Feld `READY` ist, führt die nächste Interaktion zu `_harvest()`:
 
 ```text
 FarmPlot._harvest(Player)
-        │
-        ├── liest crop_data.id             -> wheat
-        ├── liest crop_data.harvest_amount -> 1
-        │
-        ▼
+		│
+		├── liest crop_data.id             -> wheat
+		├── liest crop_data.harvest_amount -> 1
+		│
+		▼
 Player.receive_item(wheat, 1)
-        │
-        ▼
+		│
+		▼
 Inventory.add_item(wheat, 1)
-        │
-        ├──> Inventory.items wird geändert
-        └──> inventory_changed(wheat, 1)
-                         │
-                         ▼
-                  Hotbar zeigt Weizen
+		│
+		├──> Inventory.items wird geändert
+		└──> inventory_changed(wheat, 1)
+						 │
+						 ▼
+				  Hotbar zeigt Weizen
 ```
 
 Danach setzt das FarmPlot sich selbst zurück:
@@ -636,13 +636,13 @@ Wenn etwas nicht funktioniert, verfolge die Daten in dieser Reihenfolge:
 
 ```text
 Wurde receive_item() aufgerufen?
-        ↓
+		↓
 Hat Inventory.items die richtige Menge?
-        ↓
+		↓
 Wurde inventory_changed gesendet?
-        ↓
+		↓
 Ist Hotbar.inventory im Inspektor zugewiesen?
-        ↓
+		↓
 Hat die Hotbar noch einen freien Slot?
 ```
 
@@ -650,15 +650,15 @@ Hat die Hotbar noch einen freien Slot?
 
 ```text
 Ist das FarmPlot in Reichweite?
-        ↓
+		↓
 Ist es in der Gruppe interactable?
-        ↓
+		↓
 Ist state wirklich EMPTY?
-        ↓
+		↓
 Ist wheat_seed in der Hotbar ausgewählt?
-        ↓
+		↓
 Enthält Inventory mindestens ein wheat_seed?
-        ↓
+		↓
 Stimmt crop_data.seed_item_id exakt mit wheat_seed überein?
 ```
 
@@ -666,13 +666,13 @@ Stimmt crop_data.seed_item_id exakt mit wheat_seed überein?
 
 ```text
 Ändert Hotbar.selected_index sich?
-        ↓
+		↓
 Enthält der Slot eine item_id?
-        ↓
+		↓
 Wird selected_item_changed gesendet?
-        ↓
+		↓
 Existiert die Signalverbindung in main.tscn?
-        ↓
+		↓
 Ändert sich Player.selected_item_id?
 ```
 

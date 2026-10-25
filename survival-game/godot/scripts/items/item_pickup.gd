@@ -5,6 +5,7 @@ extends Area3D
 ## Welche Art Gegenstand es ist, wird über item_id im Inspektor festgelegt.
 
 # Gegenstands-ID und Menge, die beim Aufheben ins Inventar gelangen.
+@export var world_id: StringName = &""
 @export var item_id: StringName = &""
 @export_range(1, 99, 1) var amount: int = 1
 
@@ -12,6 +13,13 @@ extends Area3D
 # Registriert dieses Objekt als mögliche Interaktion für den Spieler.
 func _ready() -> void:
 	add_to_group("interactable")
+	add_to_group("job_targets")
+
+
+# Die Welt-ID bleibt auch dann als Auftragsziel erhalten, wenn die sichtbare
+# Basisszene vorübergehend nicht geladen ist.
+func get_job_target_id() -> StringName:
+	return world_id
 
 
 # actor ist der Node, der mit dem Pickup interagiert, normalerweise der Player.
