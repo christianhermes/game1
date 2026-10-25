@@ -1,12 +1,12 @@
 # ENTWICKLUNGSPLAN – Fantasy-Siedlungsspiel (Godot)
-**Stand:** 2026-10-24 · **Typ:** Lebende technische Roadmap und Arbeitsanweisung für Codex  
+**Stand:** 2026-10-25 · **Typ:** Lebende technische Roadmap und Arbeitsanweisung für Codex  
 **Projekt:** `survival-game/godot/` · **Status:** Planung; kein automatischer Implementierungsauftrag
 
 > **Für Codex:** Lies zuerst `AGENTS.md`, dann dieses Dokument, danach die relevanten **aktuellen** Godot-Dateien. Dieser Plan ist keine Aufforderung, alle Phasen nacheinander ungefragt zu implementieren. Die letzte ausdrückliche Entscheidung des Nutzers hat Vorrang. Arbeite standardmäßig als Tutor, ändere Dateien nur auf ausdrückliche Aufforderung gemäß `AGENTS.md`.
 
 ## 0. Zweck, Prioritäten und Quellen der Wahrheit
 
-Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen technischen Meilensteinen. Ziel ist ein spielbares 3D-Fantasy-Action-/Survival-Spiel mit dauerhaft ausbaubarer Heimatbasis, modularen Gebäuden, Landwirtschaft, Produktion, lokalen Lagern, einem sichtbaren Transportesel und später Expeditionen, Kampf und Basisverteidigung.
+Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen technischen Meilensteinen. Ziel ist ein spielbares stilisiertes 3D-Fantasy-Siedlungs- und Abenteuerspiel: isometrische, NPC-gesteuerte Ruinenstadt im Aufbau; direkte Charaktersteuerung bei Expeditionen; lokale Logistik durch Bewohner; Erkundung, Kampf und später isometrische Basisverteidigung.
 
 **Priorität bei Widersprüchen:**
 1. Neueste ausdrückliche Nutzerentscheidung im aktuellen Gespräch.
@@ -22,23 +22,35 @@ Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen t
 
 **Abgrenzung:** Der ältere HTML/CSS/JS-Browser-Prototyp ist Referenz für Gameplay-Ideen, nicht die Zielarchitektur. Aktive Weiterentwicklung erfolgt in Godot. Keine direkte 1:1-Portierung der JavaScript-Klassen.
 
-## 1. Verbindliche Spielregeln für die Planung
+## 1. Verbindliche Spielregeln für die Planung (aktualisiert 2026-10-25)
 
-- Stilisiertes Low-Poly-3D-Fantasy-Spiel mit Third-Person-Spieler, Heimatbasis und später getrennten Abenteuer-/Dungeon-Szenen.
-- Kampf, Exploration und spätere Basisverteidigung bleiben Kern des Spiels; Landwirtschaft, Crafting und Logistik unterstützen diesen Kern.
-- Kleine, spielbare, gut testbare Schritte; kein unnötiger Grind, keine überdimensionierte Vorab-Architektur.
-- Spielerinventar: begrenzte Slots, Stapel, Rucksack-Upgrades; **kein Gewichtssystem**.
-- Physische Kisten: jede besitzt eigene Kapazität, Filter und Inhalte. **Kein globaler, ortsunabhängiger Materialzugriff.**
-- Zentrale Siedlungsübersicht darf Bestände und Standorte anzeigen, aber weder Materialien teleportieren noch Fern-Crafting ermöglichen.
-- Werkstationen greifen auf Kisten im **selben geschlossenen Raum** oder im Freien in einem **kleinen lokalen Radius** zu. Über größere Strecken muss physisch transportiert werden.
-- Spieler startet mit einem **sichtbaren, langsamen Esel** mit begrenzter Ladekapazität; er transportiert Materialien und Produkte, baut/erntet/fällt aber nichts.
-- Eselversorgung kombiniert **Mindestbestände** und **bedarfsgerechte Belieferung laufender Produktionsaufträge**. Außerdem Baustellen, Abholung fertiger Produkte und freigegebene herumliegende Ressourcen.
-- Transporte und Reservierungen verhindern Doppelverwendung. Keine teleportierten Bestände; keine endlosen Umlagerungsschleifen.
-- Nahrung besitzt vier Frischestufen (frisch, normal, alt, verdorben); Haltbarkeit profitiert von Behälter und Raumtyp, ohne detaillierte Temperaturberechnung. Frische wird nicht durch Umräumen wiederhergestellt.
-- Aktive Werkstationen erfordern Spielerarbeit; passive Werkstationen verarbeiten nach Start/Beladung selbstständig. Esel bedient aktive Stationen nicht.
-- Forschung über Wissen, Entdeckungen, Meilensteine, Voraussetzungen und fünf Zweige: Bau, Handwerk, Landwirtschaft, Versorgung, Arkane Künste.
-- **NPCs vorerst nicht entwickeln.** Die in `AGENTS.md` erwähnte spätere NPC-Rekrutierung ist Zukunftsvision, keine aktuelle Aufgabe.
-- Angekündigte Basisangriffe und Verteidigungen erst später; ruhige Phasen dürfen nicht ständig unterbrochen werden.
+### Beschlossen: Perspektive, Spielfigur und Welt
+- **Basis im Stil von Going Medieval:** isometrische/freie Übersichtskamera, Zoom/Rotation und Mausinteraktion; keine permanente Third-Person-Steuerung in der Siedlung.
+- **Abenteuer im Stil der Steuerungs-/Kameraperspektive von Stardew Valley:** direkte Kontrolle des eigenen Charakters in einer Top-down-/schrägen Übersichtsperspektive; vorläufig weiterhin **stilisiertes Low-Poly-3D**, kein beschlossener Wechsel zu Pixel-Art/2D.
+- **Dieselbe Figur in beiden Modi:** in der Basis der erste autonom arbeitende Bewohner/NPC mit Aufgaben und Wegfindung, bei Expeditionen direkt gesteuerter Held. Einheitliche Identität, Ausrüstung, Inventar und Stats.
+- **Basis läuft während Expeditionen weiter (Variante B):** NPCs arbeiten, Transporte, Pflanzenwachstum, Verderb und passive Produktion laufen fort. Technisch darf eine vereinfachte ereignis-/zeitbasierte Hintergrundsimulation verwendet werden; keine aufwendige Offscreen-3D-Simulation nötig. Der auf Expedition befindliche Held steht für Basisaufträge nicht zur Verfügung.
+- **Basisangriffe:** sehr spät, zunächst isometrische taktische Ansicht mit NPC-Verteidigung. Direktes Übernehmen des Charakters während einer Basisschlacht ist ausdrücklich **weit hinten** und kein frühes Ziel.
+- **Spielstart:** in einer zerstörten ehemaligen Stadt. Ruinen sind verwertbare Ressourcenquellen, restaurierbare/abbaubare Bauobjekte und Fundorte für Hinweise; Freiräumen kann Keller/Wege/Fundstellen freilegen.
+- **Atmosphäre:** gemütlicher, hoffnungsvoller Wiederaufbau mit düsterer Vergangenheit und optionaler Kriminal-/Fantasy-Ermittlung. **Konkrete Story, Täter, Stadtname, Figuren, Beweisabfolge und Enden sind NICHT beschlossen und werden nicht jetzt implementiert.**
+
+### Beschlossen: Bewohner, Rekrutierung und Arbeit
+- Der eigene Charakter ist **NPC Nr. 1**; anfangs erledigt er Arbeiten nacheinander. Zusätzliche Bewohner erlauben parallele Arbeit.
+- Gemeinsames Auftragssystem für Bewohner: bewegen, Ressourcen bergen/sammeln, Holzfällen, Transportieren, Bauen, Landwirtschaft und Werkstationen bedienen; Prioritäten und nachvollziehbare Blockadegründe.
+- **NPC-Tiefe B:** individuell, aber überschaubar: Fähigkeiten, Arbeitsprioritäten, Vorlieben/Eigenschaften und wenige Bedürfnisse (zunächst Nahrung/Schlaf als spätere Stufe). Keine frühe komplexe Sozial-/Stimmungssimulation.
+- Rekrutierung **kombiniert** gewöhnliche anreisende Bewohner (Wohnraum/Versorgung als mögliche Voraussetzungen) und besondere ehemalige Bewohner/Personen aus Expeditionen und Quests. Spezielle NPCs können Wissen/Rezepte/Bonusfähigkeiten bringen; keine endgültigen Namen/Berufe/Quoten.
+- Arbeit und Materialtransporte werden durch **NPCs** erledigt. Keine magische Materialteleportation. Arbeits- und Transportaufträge müssen dieselben realen Bestände verwenden.
+- **Esel gestrichen aus dem Kernspiel und der frühen/mittleren Roadmap.** Eventuell später als Nutztier/Transporttier wie Kühe, Hühner usw.; kein anfänglicher Transportesel, keine eselspezifischen Prioritäten oder Ladepunkte.
+- Aktive Werkstationen erfordern **Arbeit eines zugewiesenen Bewohners**, nicht zwingend direkte Eingabe des Spielers. Passive Stationen verarbeiten nach Belieferung/Start selbstständig.
+
+### Weiterhin gültige Kernregeln
+- Stilisiertes Low-Poly-3D; kleine, testbare Entwicklungsschritte; wenig Grind.
+- Spielerinventar: begrenzte Slots und Stapel, Rucksack-Upgrades, **kein Gewichtssystem**.
+- Physische, voneinander unabhängige Kisten; Siedlungsübersicht ist nur lesend. Kein globaler, ortsunabhängiger Materialzugriff.
+- Werkstationen: Zugriff auf Kisten im selben geschlossenen Raum bzw. in einem kleinen lokalen Außenradius; weitere Wege erfordern physischen NPC-Transport.
+- Materialreservierungen verhindern Doppelverwendung, Transporte verlieren/duplizieren nichts.
+- Lebensmittel-Frische: frisch, normal, alt, verdorben; Lagerbehälter/Raumtyp beeinflussen Haltbarkeit.
+- Forschung über Entdeckungen und Meilensteine; Zweige Bau, Handwerk, Landwirtschaft, Versorgung, Arkane Künste als langfristige Designrichtung.
+- Ruhige Bauphasen ohne ständige Überfälle; Kampf/Expedition bleiben wichtig, ohne den Siedlungsaufbau zu dominieren.
 
 ## 2. Repository-Stand: überprüfte Ausgangsbasis (statisch, 2026-10-24)
 
@@ -113,30 +125,30 @@ Keine Tests erfinden.
 - Bei späterer Zeit-/Speicherarchitektur eindeutige IDs für persistente Weltobjekte vorsehen.
 - Neue Systeme nicht unbemerkt an alte Browser-Globals koppeln.
 
-## 4. Roadmap auf einen Blick
+## 4. Aktualisierte Roadmap auf einen Blick (Vorschlag zur Reihenfolge)
 
-| Phase | Ergebnis | Voraussetzung | Priorität |
-|---|---|---|---|
-| P0 | Stabiler, reproduzierbar startender Godot-Baseline-Stand | – | Sofort prüfen |
-| P1 | Erste frei platzierbare Holzmauer mit echter Baustelle | P0 | **Nächster empfohlener Meilenstein** |
-| P2 | Robustes Inventar mit Slots, Stacks und erster Kiste | P1 oder parallel in kleinem Schnitt | Hoch |
-| P3 | Mehrere Bauteile, Raster und erste nutzbare Gebäude | P1–P2 | Hoch |
-| P4 | Lokale Werkstattlager und korrekte Materialentnahme | P2–P3 | Hoch |
-| P5 | Sichtbarer Esel: ein Transport zwischen zwei Kisten | P2–P4 | Hoch |
-| P6 | Transportaufträge, Bauversorgung, Mindestbestand, Produktionsbedarf | P4–P5 | Hoch |
-| P7 | Persistenz und einheitliche Spielzeit | spätestens vor komplexem Weltsystem | Hoch |
-| P8 | Räume, Lagerbedingungen, Frische und Verderb | P3–P4, P7 | Mittel |
-| P9 | Vertiefte Landwirtschaft und Produktionsketten | P4, P7–P8 | Mittel |
-| P10 | Forschung und Freischaltungen | stabile Kernsysteme | Mittel |
-| P11 | Abenteuergebiete, Kampf und Loot in Godot | spielbarer Basiskreislauf | Später |
-| P12 | Verteidigungen, angekündigte Basisangriffe | P3, P11 | Später |
-| P13 | Erweiterte Siedlung, Magie, NPCs | Nutzerfreigabe | Zukunft |
+| Phase | Ergebnis | Priorität |
+|---|---|---|
+| P0 | Bestehenden Godot-Code testen, Kamera-/Input-Abhängigkeiten prüfen | Sofort |
+| P1 | Isometrische Basiskamera, Mausauswahl, Befehls-UI | **Nächster empfohlener Meilenstein** |
+| P2 | Eigener Charakter als erster NPC: Gehen, Auftrag annehmen, ausführen, abbrechen | Sehr hoch |
+| P3 | Ruinen-V1: ein abtragbarer Schutthaufen mit Ressourcen, ein restaurierbarer Bauplatz | Hoch |
+| P4 | Bauplan/Raster/Materiallieferung und Bauarbeit durch NPC; Materialvalidierung korrigieren | Hoch |
+| P5 | Slots/Stacks, physische Kisten, verlustfreie Transaktionen | Hoch |
+| P6 | NPC-Transport zwischen Fundstelle, Kiste, Baustelle und Werkstation; Reservierungen | Hoch |
+| P7 | Zeitmodell, Save/Load und Hintergrundfortschritt bei Szenenwechsel | Hoch |
+| P8 | Werkstationen: Bewohnerarbeit vs. passive Zeitproduktion, lokale Materialquellen | Hoch |
+| P9 | Zusätzlicher NPC, Prioritäten, einfache Fähigkeiten; Rekrutierung als separater kleiner Schnitt | Mittel |
+| P10 | Expedition mit direkter Steuerung; Basis läuft im Hintergrund weiter | Mittel |
+| P11 | Räume, Nahrung, Landwirtschaft, Forschung, besondere Rekrutierung | Später |
+| P12 | Isometrische NPC-Basisverteidigung | Sehr spät |
+| P13 | Tiere, komplexere NPC-Beziehungen, direkte Übernahme bei Basisschlachten | Zukunft |
 
-**Keine starre Reihenfolge:** P7 kann früher vorgezogen werden; P3 und P2 können sich teilweise abwechseln. Jede Prioritätsänderung des Nutzers übersteuert diese Tabelle.
+**Wichtig:** Die nachfolgenden historischen Detailkapitel P1–P13 wurden für den alten Third-Person-/Esel-Plan geschrieben. Sie sind **nicht mehr die verbindliche Implementierungsreihenfolge**. Nur allgemeingültige technische Abnahmeregeln (z. B. Materialintegrität, Raster, Inventar) weiterverwenden. Eselspezifische und spieler-manuelle Arbeitsanweisungen sind überholt. Die neuen Phasen oben haben Vorrang. Vor Implementierung jeweils nur den aktuellen Meilenstein im Detail spezifizieren und Code erneut prüfen.
 
 ---
 
-## 5. P0 – Technische Ausgangsbasis sichern
+## 5. HISTORISCHE DETAILKAPITEL (vor dem Perspektiv-/NPC-Pivot) – P0
 
 **Ziel:** Das aktuelle Godot-Projekt startet reproduzierbar, und wir kennen den Ist-Zustand.
 
@@ -544,9 +556,21 @@ Nächster vorgeschlagener Schritt:
 
 **Nicht** alte Einträge stillschweigend umschreiben; neue Erkenntnisse datiert ergänzen. Fortschritt nur als abgeschlossen markieren, wenn Abnahmekriterien tatsächlich geprüft wurden.
 
-## 22. Konkreter Startprompt für Codex
+## 22. Aktualisierter Startprompt für Codex
 
-> Lies `AGENTS.md` und `ENTWICKLUNGSPLAN.md`. Prüfe den aktuellen Godot-Code und ordne den tatsächlichen Stand von P0 und P1 ein. Nenne vorhandene Teile, konkrete Lücken, Risiken und einen zusammenhängenden nächsten Tutor-Meilenstein für frei platzierbare Holzmauern. Verändere zunächst keine Dateien. Prüfe insbesondere `scripts/building/build_manager.gd`, `scripts/building/construction_site.gd`, `scripts/building/build_recipe.gd` und `main.tscn`. Halte dich an die letzte ausdrückliche Entscheidung des Nutzers, falls diese einen anderen Fokus vorgibt.
+> Lies `AGENTS.md` und `ENTWICKLUNGSPLAN.md`, insbesondere die neuen Beschlüsse in Abschnitt 1 und die Roadmap in Abschnitt 4. Prüfe den aktuellen Godot-Code auf Kamera, Input, Player, Navigation und Hauptszene. Schlage als **ersten** kleinen vertikalen Schritt eine isometrische Basiskamera mit Mausauswahl und danach den eigenen Charakter als NPC mit einem einzigen Weg-/Arbeitsauftrag vor. Nenne Konflikte mit Third-Person-Steuerung, direktem Spieler-Crafting und alten Esel-Phasen. **Verändere noch keine Godot-Dateien**, bis ich ausdrücklich die Umsetzung verlange. Nutze die historischen Kapitel nur als technische Referenz, nicht als verbindliche Reihenfolge.
+
+## 23. Änderungsprotokoll 2026-10-25 – Design-Pivot
+
+- Basisperspektive auf Going-Medieval-artige Übersicht geändert; Abenteuer top-down direkt gesteuert.
+- Eigener Held ist erster autonomer Siedlungs-NPC; NPC-Arbeit und -Transport ersetzen Esel-Logistik.
+- Esel/Tiere auf unbestimmte spätere Erweiterung verschoben.
+- Basis läuft während Expeditionen weiter; Held ist dort abwesend.
+- NPC-Tiefe B; Rekrutierung durch Anreise und Expeditionen; besondere Bewohner können Hintergründe/Hinweise besitzen.
+- Spielstart in zerstörter Stadt; Ruinen als Ressourcen-/Restaurierungs-/Entdeckungsobjekte.
+- Mystery als optionale mechanische Perspektive: untersuchbare Fundstücke, Hinweise, Zeugenaussagen, Ermittlungsbuch und spätere Freischaltungen. **Kein Storyskript festgelegt**.
+- Direkte Charakterübernahme bei Basisangriffen weit nach hinten verschoben.
+- Bestehender Godot-Code wurde durch diese Dokumentänderung **nicht implementiert oder laufzeitgetestet**.
 
 ---
 **Pflege:** Dieser Plan soll mit dem Code mitwachsen, aber nie unbemerkt Designentscheidungen ersetzen. Bei neuer Nutzerentscheidung gezielt betroffene Abschnitte ändern, Widersprüche bereinigen und den Änderungsgrund dokumentieren.
