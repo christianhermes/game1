@@ -42,6 +42,17 @@ Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen t
 - **Esel gestrichen aus dem Kernspiel und der frühen/mittleren Roadmap.** Eventuell später als Nutztier/Transporttier wie Kühe, Hühner usw.; kein anfänglicher Transportesel, keine eselspezifischen Prioritäten oder Ladepunkte.
 - Aktive Werkstationen erfordern **Arbeit eines zugewiesenen Bewohners**, nicht zwingend direkte Eingabe des Spielers. Passive Stationen verarbeiten nach Belieferung/Start selbstständig.
 
+### Beschlossen: Funktionsräume, Arbeit und lokale Versorgung (2026-10-25)
+- **Raumregel C:** Jeder erkannte, geschlossene Raum kann **eine Hauptfunktion** erhalten (z. B. Zimmermannswerkstatt, Schmiede, Küche, Vorratskammer). Andere Tätigkeiten und Werkstationen im selben Raum bleiben erlaubt; keine exklusive Funktionssperre.
+- **Voraussetzungen:** Eine Hauptfunktion wird erst betriebsbereit, wenn die erforderlichen konkreten Objekte/Stationen vorhanden und nutzbar sind (z. B. Werkbank für Zimmermann, Esse und Amboss für Schmiede). Exakte Objektlisten und Boni werden je Raumtyp später definiert.
+- **Spezialisierung:** Hauptfunktion kann klar kommunizierte, moderate Vorteile bieten; nicht spezialisierte Räume/Mehrzweckwerkstätten bleiben grundsätzlich nutzbar. Keine Pflicht, jedem Raum einen Typ zuzuweisen.
+- **Raum-Arbeitszuweisung:** Ein oder mehrere Bewohner können einem Raum bzw. dessen Arbeitsplätzen zugeordnet werden. Produktionsaufträge werden an geeigneten Stationen durch zugewiesene Bewohner abgearbeitet; die Anzahl gleichzeitiger Tätigkeiten hängt von realen Arbeitsplätzen ab, nicht nur vom Raumlabel.
+- **Lokale Lager:** Kisten, Regale, Stapel etc. sind echte physische Behälter mit eigenen Beständen/Kapazitäten; ein Raum erhält **kein unsichtbares magisches Inventar**. Geeignete lokale Lager können dem Raum/Stationen zugeordnet werden. Bestandsziel und Filter je Lager oder Raum sind als späterer Konfigurationskomfort vorgesehen.
+- **Materialversorgung:** Verfügbare Transport-NPCs bringen Materialien aus physisch erreichbaren Lagern. Fehlt ein Transporteur, dürfen zugewiesene Arbeiter erforderliche Materialien **selbst holen**. Fehlen Materialien/Platz/Wege, wird die Arbeit nachvollziehbar pausiert. Entnahme, Reservierung und Transport verhindern Doppelverwendung, Verlust und endloses Pendeln.
+- **Transporttiere:** Esel können **später optional** dieselbe allgemeine Logistik unterstützen; weder Starttier noch Voraussetzung für Funktionsräume oder frühe Transportlogik.
+- **Später optional:** Raumübergreifende Produktionsketten, Auftragsreihenfolgen, Zielbestände wie „20 Brote halten“, automatische Zwischenproduktplanung. **Nicht** Teil der ersten Raumversion.
+- **Umbauten:** Raumgrenzen, fehlende Pflichtobjekte, Raumteilungen/-zusammenlegungen und unzugängliche Arbeitsplätze müssen Status/Zuordnung aktualisieren; Materialien bleiben in ihren realen Behältern.
+
 ### Weiterhin gültige Kernregeln
 - Stilisiertes Low-Poly-3D; kleine, testbare Entwicklungsschritte; wenig Grind.
 - Spielerinventar: begrenzte Slots und Stapel, Rucksack-Upgrades, **kein Gewichtssystem**.
@@ -140,7 +151,7 @@ Keine Tests erfinden.
 | P8 | Werkstationen: Bewohnerarbeit vs. passive Zeitproduktion, lokale Materialquellen | Hoch |
 | P9 | Zusätzlicher NPC, Prioritäten, einfache Fähigkeiten; Rekrutierung als separater kleiner Schnitt | Mittel |
 | P10 | Expedition mit direkter Steuerung; Basis läuft im Hintergrund weiter | Mittel |
-| P11 | Räume, Nahrung, Landwirtschaft, Forschung, besondere Rekrutierung | Später |
+| P11 | Raumdetektion und Funktionsräume (Hauptfunktion C, Pflichtobjekte, NPC-Arbeitsplätze, lokale Lager), danach Nahrung, Landwirtschaft, Forschung und besondere Rekrutierung | Später; frühere kleine Raum-V1 möglich, sobald Bauen/NPCs/Lager stehen |
 | P12 | Isometrische NPC-Basisverteidigung | Sehr spät |
 | P13 | Tiere, komplexere NPC-Beziehungen, direkte Übernahme bei Basisschlachten | Zukunft |
 
@@ -559,6 +570,17 @@ Nächster vorgeschlagener Schritt:
 ## 22. Aktualisierter Startprompt für Codex
 
 > Lies `AGENTS.md` und `ENTWICKLUNGSPLAN.md`, insbesondere die neuen Beschlüsse in Abschnitt 1 und die Roadmap in Abschnitt 4. Prüfe den aktuellen Godot-Code auf Kamera, Input, Player, Navigation und Hauptszene. Schlage als **ersten** kleinen vertikalen Schritt eine isometrische Basiskamera mit Mausauswahl und danach den eigenen Charakter als NPC mit einem einzigen Weg-/Arbeitsauftrag vor. Nenne Konflikte mit Third-Person-Steuerung, direktem Spieler-Crafting und alten Esel-Phasen. **Verändere noch keine Godot-Dateien**, bis ich ausdrücklich die Umsetzung verlange. Nutze die historischen Kapitel nur als technische Referenz, nicht als verbindliche Reihenfolge.
+
+## 23.1 Zusatzbeschluss 2026-10-25 – Funktionsräume
+
+- Raumtyp C: genau eine **Hauptfunktion** je Raum; andere Tätigkeiten erlaubt.
+- Funktionsfähigkeit abhängig von benötigten Raumobjekten; moderate Spezialisierungsboni möglich.
+- NPCs werden Räumen/Arbeitsplätzen zugewiesen und bearbeiten dort Produktionsaufträge.
+- Physische lokale Lager, Versorgung durch Transport-NPCs; Arbeiter holen Material ersatzweise selbst.
+- Esel allenfalls später optionaler Transporthelfer; kein Rückfall zum alten Esel-Kernsystem.
+- Raumübergreifende Produktionsketten/Reihenfolgen/Zielbestände bleiben später und offen.
+- **Kleiner Testpfad für die spätere Implementierung:** einen geschlossenen Raum erkennen → Hauptfunktion Zimmermannswerkstatt wählen → Werkbank als Pflichtobjekt erkennen → einen NPC zuweisen → Holz aus einer realen Kiste entnehmen oder holen → Bretter produzieren → fehlende Werkbank/Materialien/Wege verständlich anzeigen. Nicht alles in einem frühen Meilenstein implementieren.
+- Konkrete Raumobjekte, Raumgrößen, Boni, Arbeitsplatzzahlen und Transportprioritäten sind noch zu spezifizieren.
 
 ## 23. Änderungsprotokoll 2026-10-25 – Design-Pivot
 
