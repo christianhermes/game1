@@ -12,6 +12,27 @@ var next_order_id := 1
 var production_queue: Array[ProductionOrder] = []
 
 
+## Ergänzt die allgemeine Stationsinformation um verfügbare Rezepte und die
+## aktuelle Prioritätsreihenfolge der Produktionswarteschlange.
+func get_world_info_text() -> String:
+	var recipes := get_available_recipes()
+	var lines: Array[String] = [
+		"Typ: Produktionsstation",
+		"Rezepte: %d" % recipes.size(),
+	]
+	if production_queue.is_empty():
+		lines.append("Warteschlange: Leer")
+	else:
+		lines.append("Warteschlange:")
+		for index in range(production_queue.size()):
+			var order := production_queue[index]
+			var recipe_name := "Unbekannt"
+			if order.recipe != null and not order.recipe.display_name.is_empty():
+				recipe_name = order.recipe.display_name
+			lines.append("%d. %s x%d" % [index + 1, recipe_name, order.amount])
+	return "\n".join(lines)
+
+
 # Liefert alle an dieser Station auswählbaren Rezepte. Das bisherige einzelne
 # recipe wird automatisch übernommen, damit bestehende Szenen weiterlaufen.
 func get_available_recipes() -> Array[ProcessingRecipe]:

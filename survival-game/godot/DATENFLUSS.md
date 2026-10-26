@@ -92,7 +92,7 @@ eigentliche Datenquelle.
 Beispiele:
 
 - Der Text eines Hotbar-Buttons zeigt Itemname und Menge.
-- `StateLabel` zeigt `Leer`, `Wächst` oder `Erntereif`.
+- Das `WorldInfoPanel` zeigt nach Auswahl `Leer`, `Wächst` oder `Erntereif`.
 - `CropVisual.visible` bestimmt, ob die Pflanze sichtbar ist.
 - `crop_material.albedo_color` zeigt Wachstums- oder Reifezustand.
 
@@ -433,17 +433,17 @@ einer Restmenge von null passiert zusätzlich Folgendes:
 
 ## 9. Ablauf während des Wachstums
 
-Der `GrowthTimer` besitzt die verbleibende Zeit. Das FarmPlot fragt diese in
-jedem Bild ab, solange sein Zustand `GROWING` ist:
+Der `GrowthTimer` besitzt die verbleibende Zeit. Solange das Feld ausgewählt
+ist, fragt das zentrale Infofenster sie bei jeder Aktualisierung ab:
 
 ```text
 GrowthTimer.time_left
 		│
 		▼
-FarmPlot._process()
+WorldInfoPanel._process()
 		│
 		▼
-StateLabel.text = "Wächst\n... s"
+FarmPlot.get_world_info_text() -> "Wächst (... s)"
 ```
 
 Wenn der Timer abläuft, sendet Godot sein eingebautes `timeout`-Signal:
@@ -458,7 +458,7 @@ FarmPlot._on_growth_finished()
 		└── _update_visuals()
 ```
 
-Das Feld wird gelb und zeigt `Erntereif` an.
+Das Feld wird gelb und das Infofenster zeigt `Erntereif` an.
 
 Wird während des Wachstums erneut `F` gedrückt, bleibt der Zustand
 unverändert. Es wird nur `Das Feld wächst noch.` ausgegeben.
@@ -493,7 +493,7 @@ Danach setzt das FarmPlot sich selbst zurück:
 ```text
 state = EMPTY
 CropVisual wird unsichtbar
-StateLabel zeigt "Leer / F: Pflanzen"
+WorldInfoPanel zeigt bei Auswahl "Status: Leer"
 ```
 
 Wichtig: Bei der Ernte entsteht aktuell nur `wheat`. Neues `wheat_seed` wird
@@ -616,9 +616,8 @@ Prototyps:
   gleichzeitig anzeigen.
 - Es gibt noch keine allgemeine Item-Datenbank mit deutschen Anzeigenamen und
   Icons. Deshalb erzeugt die Hotbar Namen momentan direkt aus der ID.
-- Das Stein-Pickup verwendet dieselbe Pickup-Szene wie Holz. Der Text des
-  `Label3D` ist in dieser Basisszene noch fest auf `Holz` gesetzt und wird nicht
-  automatisch aus `item_id` erzeugt.
+- Pickups besitzen noch keine allgemeine Item-Datenbank mit lokalisierten
+  Anzeigenamen; das Infofenster erzeugt den Namen direkt aus `item_id`.
 - Geernteter Weizen wird noch nicht in Stroh und Weizenkörner verarbeitet.
 - `CropData` beschreibt bisher eine Pflanzenart, während jedes FarmPlot genau
   eine fest zugewiesene Pflanzenart verwendet.

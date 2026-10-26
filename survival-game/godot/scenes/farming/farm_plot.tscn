@@ -69,11 +69,3 @@ shape = SubResource("BoxShape3D_odlsx")
 
 [node name="GrowthTimer" type="Timer" parent="." unique_id=1905553464]
 one_shot = true
-
-[node name="StateLabel" type="Label3D" parent="." unique_id=34416947]
-position = Vector3(0, 2.1, 0)
-billboard = 1
-pixel_size = 0.015
-font_size = 64
-outline_size = 12
-text = "Leer"

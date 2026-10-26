@@ -18,8 +18,3 @@ surface_material_override/0 = SubResource("StandardMaterial3D_r6c0r")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=736429780]
 shape = SubResource("BoxShape3D_272bh")
-
-[node name="Label3D" type="Label3D" parent="." unique_id=1696237559]
-billboard = 1
-pixel_size = 0.015
-text = "Holz"

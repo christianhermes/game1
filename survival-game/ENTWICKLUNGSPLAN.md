@@ -1,5 +1,5 @@
 # ENTWICKLUNGSPLAN – Fantasy-Siedlungsspiel (Godot)
-**Stand:** 2026-10-25 · **Typ:** Lebende technische Roadmap und Arbeitsanweisung für Codex  
+**Stand:** 2026-10-26 · **Typ:** Lebende technische Roadmap und Arbeitsanweisung für Codex
 **Projekt:** `survival-game/godot/` · **Status:** Planung; kein automatischer Implementierungsauftrag
 
 > **Für Codex:** Lies zuerst `AGENTS.md`, dann dieses Dokument, danach die relevanten **aktuellen** Godot-Dateien. Dieser Plan ist keine Aufforderung, alle Phasen nacheinander ungefragt zu implementieren. Die letzte ausdrückliche Entscheidung des Nutzers hat Vorrang. Arbeite standardmäßig als Tutor, ändere Dateien nur auf ausdrückliche Aufforderung gemäß `AGENTS.md`.
@@ -75,19 +75,20 @@ Die folgenden Beobachtungen stammen aus gelesenen Dateien und sind **keine best�
 | Stats | `scripts/player_stats.gd` | Gesundheit, Mana, Hunger, Regeneration, Hunger-/Todesschaden |
 | Inventar | `scripts/inventory/inventory.gd` | Dictionary aus Item-ID und Menge; keine Slots/Stackgrenzen |
 | Hotbar | `scripts/ui/hotbar.gd` | Neun Slots, Mengenanzeige, Auswahl; kein vollständiges Inventar-UI |
+| Auswahl-Info | `scripts/ui/world_info_panel.gd` und Objektskripte | Zentrales, live aktualisiertes Fenster für Bewohner, Ressourcen, Felder, Werkstationen, Baustellen und fertige Gebäude; keine schwebenden Weltlabels |
 | Landwirtschaft | `scripts/farming/farm_plot.gd` | Ein Feld: leer, wächst, erntereif; Timer und Ernte |
 | Rezepte | `scripts/workstation/processing_recipe.gd`, `scripts/inventory/item_amount.gd` | Datenressourcen für eine Zutat und mehrere Ausgaben |
 | Werkstationen | `scripts/workstation/processing_station.gd` und Szenen | Sofortverarbeitung direkt mit Spielerinventar |
-| Bau | `scripts/building/build_manager.gd` | B schaltet Modus/Vorschau um; noch keine freie Platzierung |
-| Baustelle | `scripts/building/construction_site.gd` | Materialabgabe, Werkzeug, Arbeitsfortschritt, fertige Szene |
+| Bau | `scripts/building/build_manager.gd`, `scripts/building/build_grid.gd` | Zentrales 3D-Blockraster steuert Wandkanten und getrennte Schichten für Fundamente, Böden und Objekte; drehbare mehrzellige Grundflächen sind vorbereitet |
+| Baustelle | `scripts/building/construction_site.gd` | Autonomer BUILD-Auftrag liefert Material und arbeitet zeitgesteuert; Fertigstellung überträgt die Rasterbelegung, Abbruch gibt gelieferte Materialien als Pickups zurück |
 | Bau-Rezept | `scripts/building/build_recipe.gd`, `data/buildings/wood_wall.tres` | Holzmauer mit Holzbedarf und Hammer |
 | Speichern, Kisten, Esel, Raumdetektion, Verderb | in geprüften Skripten nicht vorhanden | Für diese Systeme noch keine Implementierung nachgewiesen |
 | Browser-Altbestand | `game.js`, `enemies.js`, `home.js` usw. | Älterer 2D-Kampf-/Wellen-/Heimatprototyp |
 
 **Wichtige technische Risiken aus der Codeprüfung:**
 1. `Inventory.add_item()` akzeptiert Mengen ohne Kapazitäts- und Positivprüfung; `receive_item()` meldet keinen Einlagerungserfolg. Vor begrenzten Inventaren/Pickups klären.
-2. `ConstructionSite._try_build()` prüft nicht ausdrücklich, ob **alle** Rezeptmaterialien vollständig geliefert sind; `_update_label()` betrachtet nur das erste Material. Vor Rezepten mit mehreren Zutaten korrigieren.
-3. `BuildManager` besitzt derzeit nur Umschaltung und Vorschau-Sichtbarkeit; Raster, Raycast, Platzierung, Validierung und Bestätigung fehlen.
+2. Baustellen lassen sich im Baumodus per Rechtsklick abbrechen und geben gelieferte Materialien zurück; Abreißen oder Reparieren fertiger Gebäude ist bewusst noch nicht implementiert.
+3. `BuildGrid` unterstützt die logischen Schichten für Fundament, Boden und Objekt, sichtbar getestet ist bisher jedoch nur das Wandrezept. Vor neuen Bauarten sind passende Szenen und Vorschaugeometrien erforderlich.
 4. `ProcessingStation` überträgt Produkte sofort ins Spielerinventar; für passive Stationen, Queues und Logistik braucht es später explizite Eingabe-/Ausgabepuffer.
 5. `Hotbar` und `Inventory` sind noch kein gemeinsames Slot-/Stack-Modell.
 6. `FarmPlot` verwendet einen laufenden `Timer`; Persistenz und Szenenwechsel erfordern später ein Zeitmodell.

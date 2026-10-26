@@ -3,12 +3,16 @@ extends Area3D
 
 @export var display_name := "Arbeitsstation"
 
-@onready var station_label: Label3D = $StationLabel
-
-
 func _ready() -> void:
 	add_to_group("interactable")
-	station_label.text = display_name
+
+
+func get_world_info_title() -> String:
+	return display_name
+
+
+func get_world_info_text() -> String:
+	return "Typ: Arbeitsstation"
 
 
 func interact(actor: Node3D) -> void:

@@ -9,12 +9,16 @@ extends Area3D
 @export_range(1, 99, 1) var reward_amount: int = 3
 @export var item_pickup_scene: PackedScene
 
-@onready var rubble_label: Label3D = $RubbleLabel
-
-
 func _ready() -> void:
 	add_to_group("job_targets")
-	rubble_label.text = "Schutthaufen\nEnthält: %d %s" % [
+
+
+func get_world_info_title() -> String:
+	return "Schutthaufen"
+
+
+func get_world_info_text() -> String:
+	return "Enthält: %d %s" % [
 		reward_amount,
 		String(reward_item_id).capitalize(),
 	]

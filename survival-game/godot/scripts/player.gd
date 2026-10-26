@@ -62,6 +62,32 @@ func set_selected(selected: bool) -> void:
 	selection_marker.visible = selected
 
 
+## Zeigt im Basismodus die wichtigsten Bewohnerwerte und den aktuellen
+## Tätigkeitszustand im gemeinsamen Auswahlfenster an.
+func get_world_info_title() -> String:
+	return "Bewohner: %s" % name
+
+
+func get_world_info_text() -> String:
+	var activity := "Bereit"
+	if direct_control_enabled:
+		activity = "Direkte Steuerung"
+	elif current_job_id >= 0:
+		activity = "Arbeitet (Auftrag %d)" % current_job_id
+	elif has_move_target:
+		activity = "Unterwegs"
+
+	var lines: Array[String] = [
+		"Status: %s" % activity,
+		"Leben: %d/%d" % [roundi(stats.health), roundi(stats.max_health)],
+		"Mana: %d/%d" % [roundi(stats.mana), roundi(stats.max_mana)],
+		"Hunger: %d/%d" % [roundi(stats.hunger), roundi(stats.max_hunger)],
+	]
+	if not selected_item_id.is_empty():
+		lines.append("Ausgewählt: %s" % String(selected_item_id).capitalize())
+	return "\n".join(lines)
+
+
 # Liefert die szenenunabhängige ID dieses Bewohners für neue Aufträge.
 func get_worker_id() -> StringName:
 	return worker_id

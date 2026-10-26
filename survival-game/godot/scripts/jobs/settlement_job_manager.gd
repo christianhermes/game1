@@ -20,6 +20,7 @@ enum JobStatus {
 	RUNNING,
 	FINISHED,
 	CANCELLED,
+	RESERVED,
 }
 
 
@@ -96,3 +97,18 @@ func cancel_job(job_id: int) -> bool:
 		job["status"] = JobStatus.CANCELLED
 		return true
 	return false
+
+
+## Bricht alle offenen oder laufenden Aufträge für genau ein Weltziel ab und
+## liefert die Anzahl der tatsächlich geänderten Aufträge zurück. Abgeschlossene
+## oder bereits abgebrochene Einträge bleiben als Verlauf erhalten.
+func cancel_jobs_for_target(target_id: StringName) -> int:
+	var cancelled_count := 0
+	for job_id in jobs:
+		var job: Dictionary = jobs[job_id]
+		if job.get("target_id", &"") != target_id:
+			continue
+		if cancel_job(job_id):
+			cancelled_count += 1
+
+	return cancelled_count

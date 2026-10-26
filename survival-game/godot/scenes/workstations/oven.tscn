@@ -15,11 +15,7 @@ script = ExtResource("2_3tauj")
 recipe = ExtResource("3_on5j3")
 display_name = "Ofen"
 
-[node name="StationLabel" parent="." index="1" unique_id=1254845410]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.5, 0)
-text = "Ofen"
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." index="2" unique_id=581321726]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." index="1" unique_id=581321726]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 material_override = SubResource("StandardMaterial3D_hjb8m")
 mesh = SubResource("BoxMesh_lfxu0")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/rubble_pile.gd" id="1_rubble"]
 [ext_resource type="PackedScene" path="res://scenes/items/item_pickup.tscn" id="2_pickup"]
@@ -28,9 +28,3 @@ mesh = SubResource("RubbleMesh")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 shape = SubResource("RubbleShape")
-
-[node name="RubbleLabel" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-billboard = 1
-pixel_size = 0.015
-text = "Schutthaufen"

@@ -8,14 +8,12 @@ extends Area3D
 @export var world_id: StringName = &""
 @export var item_id: StringName = &""
 @export_range(1, 99, 1) var amount: int = 1
-@onready var item_label: Label3D = $Label3D
 
 
 # Registriert dieses Objekt als mögliche Interaktion für den Spieler.
 func _ready() -> void:
 	add_to_group("interactable")
 	add_to_group("job_targets")
-	_update_label()
 
 
 # Die Welt-ID bleibt auch dann als Auftragsziel erhalten, wenn die sichtbare
@@ -30,15 +28,14 @@ func get_job_type() -> SettlementJobManager.JobType:
 	return SettlementJobManager.JobType.PICKUP
 
 
-# Zeigt die Item-ID als lesbaren Namen an und kennzeichnet Pickups ohne
-# konfigurierte ID eindeutig als unbekannte Ressource.
-func _update_label() -> void:
-	var display_name = String(item_id)
+## Liefert Name und Menge für das gemeinsame Auswahlfenster.
+func get_world_info_title() -> String:
+	var item_name := String(item_id)
+	return "Unbekannte Ressource" if item_name.is_empty() else item_name.capitalize()
 
-	if display_name.is_empty():
-		item_label.text = "Unbekannte Ressource"
-		return
-	item_label.text = display_name.capitalize()
+
+func get_world_info_text() -> String:
+	return "Menge: %d" % amount
 
 
 # actor ist der Node, der mit dem Pickup interagiert, normalerweise der Player.

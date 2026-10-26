@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://bog7vtjoxvii4"]
 
+[ext_resource type="Script" path="res://scripts/building/finished_building.gd" id="1_building"]
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjb8m"]
 albedo_color = Color(0.43371361, 0.15039426, 0.09456252, 1)
 
@@ -9,7 +11,10 @@ size = Vector3(2, 2, 0.3)
 [sub_resource type="BoxShape3D" id="BoxShape3D_r6c0r"]
 size = Vector3(2, 2, 0.3)
 
-[node name="WoodWall" type="StaticBody3D" unique_id=447060690]
+[node name="WoodWall" type="StaticBody3D" unique_id=447060690 groups=["build_occupant"]]
+script = ExtResource("1_building")
+display_name = "Holzmauer"
+max_health = 150.0
 
 [node name="WallMesh" type="MeshInstance3D" parent="." unique_id=2064054490]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

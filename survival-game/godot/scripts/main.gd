@@ -28,6 +28,7 @@ const BASE_CAMERA_ZOOM_STEP := 2.0
 @onready var hotbar = $UI/Hotbar
 @onready var control_mode_label: Label = $UI/ControlModeLabel
 @onready var workstation_menu = $UI/WorkstationMenu
+@onready var world_info_panel = $UI/WorldInfoPanel
 
 # Diese Position ist das Ziel, auf das die Kamera schaut.
 var camera_target := Vector3.ZERO
@@ -79,11 +80,12 @@ func _input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			# UI-Klicks sollen keine Auswahl in der 3D-Welt auslösen.
-			if get_viewport().gui_get_hovered_control() != null:
-				return
+		# Kein Mausklick auf HUD oder Fenster darf durch die Oberfläche hindurch
+		# einen Weltbefehl, eine Auswahl oder einen Bauabbruch auslösen.
+		if get_viewport().gui_get_hovered_control() != null:
+			return
 
+		if event.button_index == MOUSE_BUTTON_LEFT:
 			# Im Baumodus platziert der Linksklick eine Baustelle und darf nicht
 			# zusätzlich die normale Auswahl in der Welt auslösen.
 			if build_manager.is_build_mode_active():
@@ -94,6 +96,15 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			# Im Baumodus hat der kontrollierte Baustellenabbruch Vorrang. Ein
+			# Rechtsklick auf andere Ziele bleibt der normale Bewohnerbefehl.
+			if (
+				build_manager.is_build_mode_active()
+				and build_manager.try_cancel_construction_site(event.position)
+			):
+				get_viewport().set_input_as_handled()
+				return
+
 			_command_selected_actor(event.position)
 			get_viewport().set_input_as_handled()
 			return
@@ -132,9 +143,13 @@ func _select_at_mouse(mouse_position: Vector2) -> void:
 	# Wenn hit leer ist, soll die bisherige Auswahl aufgehoben werden.
 	if hit.is_empty():
 		workstation_menu.close_menu()
+		world_info_panel.close_panel()
 		_set_selected_actor(null)
 	else:
 		var collider: Object = hit.get("collider")
+		# Jedes Weltobjekt entscheidet selbst, welche Informationen es anbietet.
+		# Unbekannte Treffer (zum Beispiel der Boden) schließen das Fenster.
+		world_info_panel.show_target(collider as Node)
 		if collider is ProcessingStation:
 			_set_selected_actor(null)
 			workstation_menu.open_for_station(collider as ProcessingStation)
@@ -271,10 +286,11 @@ func _apply_control_mode() -> void:
 		camera.size = base_camera_size
 		control_mode_label.text = (
 			"BASISMODUS\n"
-			+ "Tab: Charakter | WASD: Kamera | Q/E: Drehen | Mausrad: Zoom | B: Bauen"
+			+ "Tab: Charakter | WASD: Kamera | Q/E: Kamera drehen | Mausrad: Zoom | B: Bauen | R: Bauteil drehen"
 		)
 	else:
 		workstation_menu.close_menu()
+		world_info_panel.close_panel()
 		camera_target = player.global_position
 		camera.size = DEFAULT_CAMERA_SIZE
 		control_mode_label.text = (
