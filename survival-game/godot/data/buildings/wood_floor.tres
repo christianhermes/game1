@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BuildRecipe" format=3 uid="uid://mve2r6uvbp4m"]
+
+[ext_resource type="PackedScene" uid="uid://umkibls3nu6l" path="res://scenes/buildings/WoodFloor.tscn" id="1_nm8j5"]
+[ext_resource type="Script" uid="uid://bcjjfrinsxlao" path="res://scripts/inventory/item_amount.gd" id="2_vdwkg"]
+[ext_resource type="Script" uid="uid://cihlel7yctui3" path="res://scripts/building/build_recipe.gd" id="3_gu608"]
+
+[sub_resource type="Resource" id="Resource_4ovt5"]
+script = ExtResource("2_vdwkg")
+item_id = &"wood"
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[resource]
+script = ExtResource("3_gu608")
+display_name = "Holzboden"
+finished_scene = ExtResource("1_nm8j5")
+required_materials = Array[ExtResource("2_vdwkg")]([SubResource("Resource_4ovt5")])
+required_tool_id = &"hammer"
+required_work = 2
+placement_type = 2
+can_rotate = false
+metadata/_custom_type_script = "uid://cihlel7yctui3"

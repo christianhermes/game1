@@ -1,6 +1,9 @@
 class_name BuildManager
 extends Node3D
 
+signal build_mode_changed(is_active: bool)
+signal selected_recipe_changed(recipe: BuildRecipe)
+
 # Godot verwendet für Drehungen Radiant. PI / 2 entspricht genau 90 Grad.
 const PLACEMENT_ROTATION_STEP := PI / 2.0
 const BUILD_OCCUPANT_GROUP := &"build_occupant"
@@ -14,6 +17,11 @@ const INVALID_PREVIEW_COLOR := Color(0.9, 0.15, 0.1, 1.0)
 @export var build_grid: Node
 @export var construction_site_scene: PackedScene
 @export var selected_recipe: BuildRecipe
+# Fundament, Boden und Wand besitzen eigene BuildRecipe-Ressourcen und sind in
+# der Hauptszene gemeinsam im verfügbaren Baukatalog eingetragen.
+# Alle im Baumenü sichtbaren Rezepte werden im Inspector eingetragen. Das
+# aktuell gewählte Rezept bleibt separat, weil es sich während des Spiels ändert.
+@export var available_recipes: Array[BuildRecipe] = []
 
 @onready var placement_preview: MeshInstance3D = $PlacementPreview
 
@@ -29,6 +37,74 @@ var current_placement_valid := false
 func _ready() -> void:
 	set_control_enabled(false)
 	_register_existing_construction_sites()
+
+
+## Liefert eine validierte Kopie des Baukatalogs ohne Nullwerte und Duplikate.
+## Das aktuell ausgewählte Rezept steht an erster Stelle und bleibt dadurch auch
+## verfügbar, wenn es nicht zusätzlich im Inspector-Array eingetragen wurde.
+func get_available_recipes() -> Array[BuildRecipe]:
+	var result: Array[BuildRecipe] = []
+	if not selected_recipe == null and selected_recipe.is_placement_data_valid() and not result.has(selected_recipe):
+		result.insert(0, selected_recipe)
+	for index in range(available_recipes.size()):
+		if available_recipes[index] == null or not available_recipes[index].is_placement_data_valid() or result.has(available_recipes[index]):
+			continue
+		result.append(available_recipes[index])
+	return result
+
+
+## Wählt ausschließlich ein Rezept aus dem gültigen Baukatalog. Bei Erfolg
+## werden Drehung und Vorschau zurückgesetzt und die Änderung als Signal gemeldet.
+func select_recipe(recipe_to_select: BuildRecipe) -> bool:
+	if not get_available_recipes().has(recipe_to_select):
+		return false
+
+	selected_recipe = recipe_to_select
+	_reset_placement_rotation()
+	_update_placement_preview_shape()
+	selected_recipe_changed.emit(selected_recipe)
+	return true
+
+
+
+## Passt die Vorschaugeometrie an Platzierungsart und Rastergrundfläche des
+## ausgewählten Rezepts an. Eine lokale Mesh-Kopie verhindert, dass Änderungen
+## versehentlich andere Nodes beeinflussen, die dieselbe Resource verwenden.
+func _update_placement_preview_shape() -> void:
+	# Ohne Rezept kann keine passende Form berechnet werden. `as BoxMesh` ergibt
+	# null, falls später einmal eine andere Mesh-Art als Vorschau verwendet wird.
+	if selected_recipe == null:
+		return
+	var source_mesh := placement_preview.mesh as BoxMesh
+	if source_mesh == null:
+		return
+
+	# Meshes sind Resources und können von mehreren Nodes gemeinsam verwendet
+	# werden. Wir verändern deshalb ausschließlich eine Kopie dieser Instanz.
+	var preview_mesh := source_mesh.duplicate() as BoxMesh
+	if preview_mesh == null:
+		return
+	placement_preview.mesh = preview_mesh
+
+	match selected_recipe.placement_type:
+		BuildRecipe.PlacementType.WALL_EDGE:
+			preview_mesh.size = Vector3(
+				BuildGrid.CELL_SIZE,
+				0.1,
+				0.4,
+			)
+
+		BuildRecipe.PlacementType.FOUNDATION, BuildRecipe.PlacementType.FLOOR, BuildRecipe.PlacementType.OBJECT:
+			# Diese Werte sind bereits die sichtbare Breite und Tiefe in Metern.
+			# Die Node-Rotation dreht die Vorschau später als Ganzes.
+			var preview_width := selected_recipe.footprint.x * BuildGrid.CELL_SIZE
+			var preview_depth := selected_recipe.footprint.y * BuildGrid.CELL_SIZE
+
+			preview_mesh.size = Vector3(
+				preview_width,
+				0.1,
+				preview_depth,
+			)
 
 
 ## Aktualisiert die Bauvorschau fortlaufend auf der gültigen Rasterposition
@@ -109,6 +185,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		placement_preview.visible = build_mode
 		if not build_mode:
 			_reset_placement_rotation()
+		build_mode_changed.emit(build_mode)
 		get_viewport().set_input_as_handled()
 		return
 
@@ -310,8 +387,11 @@ func set_control_enabled(enabled: bool) -> void:
 	control_enabled = enabled
 
 	if not control_enabled:
+		var was_build_mode_active := build_mode
 		build_mode = false
 		placement_preview.visible = false
 		current_placement_position = null
 		current_placement_valid = false
 		_reset_placement_rotation()
+		if was_build_mode_active:
+			build_mode_changed.emit(false)

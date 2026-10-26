@@ -29,6 +29,7 @@ const BASE_CAMERA_ZOOM_STEP := 2.0
 @onready var control_mode_label: Label = $UI/ControlModeLabel
 @onready var workstation_menu = $UI/WorkstationMenu
 @onready var world_info_panel = $UI/WorldInfoPanel
+@onready var build_menu = $UI/BuildMenu
 
 # Diese Position ist das Ziel, auf das die Kamera schaut.
 var camera_target := Vector3.ZERO
@@ -47,10 +48,24 @@ func _ready() -> void:
 	camera.size = DEFAULT_CAMERA_SIZE
 	_apply_control_mode()
 	_update_camera()
+	_prepare_build_menu()
 
 	# Startausrüstung: Der Spieler erhält drei Weizenkörner.
 	player.receive_item(&"wheat_seed", 3)
 	player.receive_item(&"hammer", 1)
+
+
+## Übergibt den gültigen Baukatalog an das Menü und verbindet Auswahl sowie
+## Sichtbarkeit genau einmal mit dem BuildManager. Das Menü bleibt bis zum
+## Aktivieren des Baumodus geschlossen.
+func _prepare_build_menu() -> void:
+	build_menu.visible = false
+	build_menu.set_recipes(build_manager.get_available_recipes())
+	if not build_menu.recipe_selected.is_connected(build_manager.select_recipe):
+		build_menu.recipe_selected.connect(build_manager.select_recipe)
+
+	if not build_manager.build_mode_changed.is_connected(build_menu.set_catalog_visible):
+		build_manager.build_mode_changed.connect(build_menu.set_catalog_visible)
 
 
 # _process() wird in jedem dargestellten Bild aufgerufen.

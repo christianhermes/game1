@@ -1,6 +1,164 @@
 # Offline-Aufgaben: Bauen V1
 
-## Aktueller Meilenstein: Gemeinsames Blockraster für alle Bauarten
+## Abgeschlossener Meilenstein: Baukatalog, Fundament und Bodenplatte
+
+Das zentrale `BuildGrid` besitzt bereits getrennte Schichten für Wandkanten,
+Fundamente, Böden und Objekte. Bisher verwendet das sichtbare Spiel davon nur
+die Holzwand. Die Aufgaben 44 bis 49 machen den Unterschied erstmals spielbar:
+Im Baumodus können Holzmauer, Holzfundament und Holzboden gewählt und über
+denselben Baustellen- und Bewohnerablauf errichtet werden.
+
+Die Aufgaben bauen aufeinander auf. Bearbeite immer nur die nächste Aufgabe
+und melde danach `fertig`, damit die Umsetzung geprüft wird. Fertige
+TODO-Kommentare werden anschließend durch dauerhafte Dokumentation ersetzt.
+
+### Abgeschlossen: Aufgabe 44 – Fundament, Boden und ihre Rezepte im Editor anlegen
+
+Diese Aufgabe findet zunächst vollständig im Godot-Editor statt. Du brauchst
+noch keinen neuen GDScript-Code.
+
+Erstelle `scenes/buildings/WoodFoundation.tscn`:
+
+1. Root: `StaticBody3D`, Name `WoodFoundation`.
+2. Hänge `scripts/building/finished_building.gd` an den Root.
+3. Trage den Root in die Gruppe `build_occupant` ein.
+4. Setze `display_name` auf `Holzfundament` und `max_health` auf `200`.
+5. Füge ein `MeshInstance3D` mit `BoxMesh` hinzu. Größe: `2, 0.3, 2`.
+6. Verschiebe das Mesh auf Y = `-0.1`. Es reicht damit etwas in den Boden und
+   bleibt trotzdem sichtbar.
+7. Füge ein `CollisionShape3D` mit derselben Boxgröße und Y-Position hinzu.
+8. Gib dem Mesh ein eigenes braun-graues Material.
+
+Erstelle danach `scenes/buildings/WoodFloor.tscn`:
+
+1. Derselbe Root-Aufbau, dieselbe Gruppe und dasselbe Skript.
+2. `display_name = Holzboden`, `max_health = 80`.
+3. Mesh und Collision verwenden die Größe `2, 0.12, 2`.
+4. Beide liegen auf Y = `0.06`, also direkt auf der Bodenoberfläche.
+5. Verwende ein helleres Holzmaterial, damit Boden und Fundament im Test klar
+   unterscheidbar sind.
+
+Erstelle anschließend zwei `BuildRecipe`-Ressourcen im Ordner
+`data/buildings/`:
+
+- `wood_foundation.tres`: Name `Holzfundament`, fertige Szene
+  `WoodFoundation.tscn`, zwei Holz, Hammer, drei Arbeitsschritte,
+  `placement_type = FOUNDATION`, `footprint = (1, 1)`, nicht drehbar.
+- `wood_floor.tres`: Name `Holzboden`, fertige Szene `WoodFloor.tscn`, ein Holz,
+  Hammer, zwei Arbeitsschritte, `placement_type = FLOOR`,
+  `footprint = (1, 1)`, nicht drehbar.
+
+Öffne zuletzt `main.tscn`, wähle den `BuildManager` und erweitere dessen Array
+`available_recipes`: Holzmauer, Holzfundament und Holzboden sollen dort genau
+einmal enthalten sein. `selected_recipe` bleibt zunächst die Holzmauer.
+
+Prüfung nach Aufgabe 44:
+
+- Beide neuen Szenen lassen sich einzeln ohne Fehler öffnen.
+- Beide Root-Nodes besitzen `finished_building.gd` und `build_occupant`.
+- Beide Rezepte zeigen die richtige fertige Szene und Platzierungsart.
+- Das Projekt startet weiterhin; eine Auswahl im Spiel folgt erst in Aufgabe 47.
+
+### Abgeschlossen: Aufgabe 45 – gültigen Baukatalog und Rezeptauswahl implementieren
+
+Datei: `godot/scripts/building/build_manager.gd`.
+
+`get_available_recipes()` erzeugt eine validierte Kopie ohne Nullwerte und
+Duplikate. `select_recipe()` akzeptiert ausschließlich Einträge aus diesem
+Katalog. Der `BuildManager` bleibt damit die einzige Stelle, die das tatsächlich
+ausgewählte Rezept verändert; das Menü sendet nur den Wunsch des Spielers.
+
+Wichtige Prüfungen:
+
+- `get_available_recipes()` gibt ein neues Array zurück.
+- Nullwerte, ungültige Rezepte und Duplikate werden ausgelassen.
+- Die bisherige `selected_recipe` geht nicht verloren.
+- `select_recipe()` akzeptiert nur ein Rezept aus dem gültigen Katalog.
+- Bei Erfolg werden Drehung, Vorschau und Signal aktualisiert.
+- Bei Fehlschlag bleibt das bisherige Rezept unverändert.
+
+Du kannst diese Aufgabe zunächst ohne sichtbares Menü prüfen, indem du für den
+Test kurz die Kataloggröße und die Namen ausgibst. Entferne Testausgaben danach.
+
+### Abgeschlossen: Aufgabe 46 – Buttons des Baumenüs dynamisch erzeugen
+
+Datei: `godot/scripts/ui/build_menu.gd`, Funktion `set_recipes()`.
+
+Das Fenster erzeugt für jedes gültige Rezept einen eigenen Button. Vorherige
+Buttons werden entfernt, Nullwerte übersprungen und jedes Rezept mit `bind()`
+fest an den Callback seines Buttons gebunden.
+
+Diese Funktion darf weder `selected_recipe` setzen noch den `BuildManager`
+suchen. Ihre einzige Aufgabe ist Darstellung und das Signal `recipe_selected`.
+
+### Abgeschlossen: Aufgabe 47 – Baumenü mit dem BuildManager verbinden
+
+Datei: `godot/scripts/main.gd`, Funktion `_prepare_build_menu()`.
+
+Die drei vorbereiteten Teile sind miteinander verbunden:
+
+1. Der gültige Katalog wird einmal an das Menü übergeben.
+2. Ein Rezeptklick ruft über das Signal `BuildManager.select_recipe()` auf.
+3. `build_mode_changed` öffnet beziehungsweise schließt das Menü zusammen mit
+   dem Baumodus.
+
+Test nach Aufgaben 45 bis 47:
+
+1. Basismodus mit Tab aktivieren; das Baumenü bleibt geschlossen.
+2. B drücken; das Menü erscheint mit genau drei verschiedenen Buttons.
+3. B erneut drücken; das Menü verschwindet.
+4. Tab während des Baumodus drücken; das Menü verschwindet ebenfalls.
+5. Ein Klick auf einen Menübutton darf nicht gleichzeitig eine Baustelle hinter
+   dem UI platzieren.
+
+### Abgeschlossen: Aufgabe 48 – Bauvorschau an das gewählte Rezept anpassen
+
+Datei: `godot/scripts/building/build_manager.gd`, Funktion
+`_update_placement_preview_shape()`.
+
+Die Vorschau verwendet eine lokale Kopie ihres `BoxMesh`. Wandrezepte erzeugen
+einen dünnen Streifen auf einer Rasterkante; flächige Rezepte berechnen Breite
+und Tiefe aus ihrem `footprint`. Ein 2×1-Rezept erzeugt dadurch eine 4×2 Meter
+große Vorschau. Die logische Belegung bleibt davon getrennt im `BuildGrid`.
+
+Test:
+
+- Holzmauer zeigt weiterhin einen dünnen Wandstreifen auf einer Zellkante.
+- Fundament und Boden zeigen jeweils ein 2×2-Meter-Quadrat in der Zellmitte.
+- R verändert ein nicht drehbares Boden- oder Fundamentrezept nicht.
+- Rot und Grün funktionieren für alle drei Rezeptarten weiterhin.
+
+### Abgeschlossen: Aufgabe 49 – allgemeine Baustelle sichtbar an die Bauart anpassen
+
+Datei: `godot/scripts/building/construction_site.gd`, Funktion
+`_update_site_visuals()`.
+
+Die allgemeine orange Baustelle passt Mesh und Kollisionsform an die Bauart an.
+Beide Resources werden pro Instanz mit `duplicate()` kopiert, damit gleichzeitig
+vorhandene Wand-, Fundament- und Bodenbaustellen unabhängig bleiben.
+
+Abschlusstest des Meilensteins:
+
+1. Platziere je eine Wand-, Fundament- und Bodenbaustelle.
+2. Fundament und Boden dürfen dieselbe Rasterzelle verwenden.
+3. Ein zweites Fundament auf derselben Zelle wird rot und kann nicht platziert
+   werden; dasselbe gilt für einen zweiten Boden.
+4. Eine Wand darf weiterhin an der Kante derselben Zelle stehen.
+5. Rechtsklick bricht jede unfertige Bauart ab und gibt Material zurück.
+6. Der Bewohner liefert Material und baut alle drei Arten vollständig fertig.
+7. Fertige Teile zeigen im Infofenster Namen, Status und Leben.
+
+Bewusst noch nicht Teil dieses Meilensteins:
+
+- Fundament als zwingende Voraussetzung für Böden oder Wände,
+- Ziehen mehrerer Bodenplatten mit gedrückter Maustaste,
+- Türen, Dächer und mehrere Stockwerke,
+- automatische Raumdetektion,
+- NavigationMesh-Neuberechnung nach Baumaßnahmen.
+
+---
+
+## Abgeschlossener Meilenstein: Gemeinsames Blockraster für alle Bauarten
 
 Bevor Fundamente, Böden oder Werkbänke hinzukommen, wird die bisherige
 wandbezogene Platzierung in eine zentrale `BuildGrid`-Klasse überführt. Eine

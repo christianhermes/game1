@@ -27,7 +27,53 @@ func _ready() -> void:
 		status_message = "Ungültiges Baurezept"
 		return
 
+	_update_site_visuals()
 	_update_status()
+
+
+## Formt die allgemeine Baustellenszene passend zum aktuellen Rezept. Mesh und
+## Kollisionsform werden pro Instanz dupliziert, damit Wand-, Fundament- und
+## Bodenbaustellen ihre Resources nicht gegenseitig verändern.
+func _update_site_visuals() -> void:
+	var site_mesh := get_node_or_null("SiteMesh") as MeshInstance3D
+	var interaction_shape := get_node_or_null("InteractionShape") as CollisionShape3D
+	if site_mesh == null or interaction_shape == null:
+		return
+
+	var source_mesh := site_mesh.mesh as BoxMesh
+	var source_shape := interaction_shape.shape as BoxShape3D
+	if source_mesh == null or source_shape == null:
+		return
+
+	# Beide Kopien werden vorbereitet, bevor eine Node verändert wird. Dadurch
+	# bleibt die Baustelle auch bei einer unerwarteten Resource vollständig intakt.
+	var local_mesh := source_mesh.duplicate() as BoxMesh
+	var local_shape := source_shape.duplicate() as BoxShape3D
+	if local_mesh == null or local_shape == null:
+		return
+
+	var visual_size := Vector3(
+		BuildGrid.CELL_SIZE,
+		0.1,
+		0.4,
+	)
+	var collision_size := Vector3(
+		BuildGrid.CELL_SIZE,
+		0.5,
+		0.8,
+	)
+	if recipe.placement_type != BuildRecipe.PlacementType.WALL_EDGE:
+		var width := recipe.footprint.x * BuildGrid.CELL_SIZE
+		var depth := recipe.footprint.y * BuildGrid.CELL_SIZE
+		visual_size = Vector3(width, 0.1, depth)
+		collision_size = Vector3(width, 0.5, depth)
+
+	local_mesh.size = visual_size
+	local_shape.size = collision_size
+	site_mesh.mesh = local_mesh
+	interaction_shape.shape = local_shape
+	site_mesh.position.y = visual_size.y / 2.0
+	interaction_shape.position.y = collision_size.y / 2.0
 
 
 # Liefert die stabile Ziel-ID, unter der Bewohner diese Baustelle wiederfinden.

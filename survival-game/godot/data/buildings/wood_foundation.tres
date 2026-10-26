@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="BuildRecipe" format=3 uid="uid://bvvccljviuu2o"]
+
+[ext_resource type="PackedScene" uid="uid://dxj15phhkenym" path="res://scenes/buildings/WoodFoundation.tscn" id="1_ggmsj"]
+[ext_resource type="Script" uid="uid://bcjjfrinsxlao" path="res://scripts/inventory/item_amount.gd" id="2_qkgu8"]
+[ext_resource type="Script" uid="uid://cihlel7yctui3" path="res://scripts/building/build_recipe.gd" id="3_7715p"]
+
+[sub_resource type="Resource" id="Resource_4ovt5"]
+script = ExtResource("2_qkgu8")
+item_id = &"wood"
+amount = 2
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[resource]
+script = ExtResource("3_7715p")
+display_name = "Holzfundament"
+finished_scene = ExtResource("1_ggmsj")
+required_materials = Array[ExtResource("2_qkgu8")]([SubResource("Resource_4ovt5")])
+required_tool_id = &"hammer"
+required_work = 3
+placement_type = 1
+can_rotate = false
+metadata/_custom_type_script = "uid://cihlel7yctui3"

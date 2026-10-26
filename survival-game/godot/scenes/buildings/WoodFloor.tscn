@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://umkibls3nu6l"]
+
+[ext_resource type="Script" uid="uid://bprjhqae46a6f" path="res://scripts/building/finished_building.gd" id="1_pegc4"]
+
+[sub_resource type="StandardMaterial3D" id="FloorMaterial"]
+albedo_color = Color(0.62, 0.34, 0.14, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_lfxu0"]
+material = SubResource("FloorMaterial")
+size = Vector3(2, 0.12, 2)
+
+[sub_resource type="BoxShape3D" id="FloorShape"]
+size = Vector3(2, 0.12, 2)
+
+[node name="WoodFloor" type="StaticBody3D" unique_id=1508392582 groups=["build_occupant"]]
+script = ExtResource("1_pegc4")
+display_name = "Holzboden"
+max_health = 80.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1981439926]
+position = Vector3(0, 0.06, 0)
+mesh = SubResource("BoxMesh_lfxu0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.06, 0)
+shape = SubResource("FloorShape")

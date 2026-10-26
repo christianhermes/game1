@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://dxj15phhkenym"]
+
+[ext_resource type="Script" uid="uid://bprjhqae46a6f" path="res://scripts/building/finished_building.gd" id="1_b4nui"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjb8m"]
+albedo_color = Color(0.7289343, 0.37314498, 0.22829881, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lfxu0"]
+size = Vector3(2, 0.3, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_lfxu0"]
+size = Vector3(2, 0.3, 2)
+
+[node name="WoodFoundation" type="StaticBody3D" unique_id=1508392582 groups=["build_occupant"]]
+script = ExtResource("1_b4nui")
+display_name = "Holzfundament"
+max_health = 200.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1981439926]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+material_override = SubResource("StandardMaterial3D_hjb8m")
+mesh = SubResource("BoxMesh_lfxu0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=555397505]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+shape = SubResource("BoxShape3D_lfxu0")
