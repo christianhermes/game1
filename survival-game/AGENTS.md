@@ -57,6 +57,21 @@ WEITER UNTEN. Für Details siehe ENTWICKLUNGSPLAN.md, Abschnitte 1 und 4.
 - SPÄTER: Produktionsketten, Reihenfolge der Räume,
   automatische Zielbestände und optional Transporttiere.
   Diese Features nicht vorzeitig implementieren.
+- BAUSYSTEM: Einzelbauteile und komplette, nachträglich
+  bearbeitbare Gebäudevorlagen nutzen dieselben Bau-/Raster-/
+  Baustellenregeln. Vorlagen bleiben modular editierbar.
+- MAUERBAU B: Hauswände auf Rasterkanten; Holzpalisaden aus
+  Pfählen als ziehbare Linien; massive Steinmauern aus größeren
+  stapelbaren Rasterblöcken, nicht aus Einzelsteinen.
+  Steinblock-Oberseiten bei gültigem Zugang grundsätzlich
+  begehbar; Wehrgänge/Plattformen, Brüstungen, Zinnen, Treppen,
+  Türme und Torhäuser separat und schrittweise ergänzen.
+  Linien erzeugen reguläre einzelne Baustellen.
+- MAUER-FORTSCHRITT: Palisaden reparieren/abbauen, Holz
+  teilweise wiederverwenden; später Steinmauern mit optionalen
+  Wehrgängen und Zinnen. Zuerst Höhenbelegung/Validierung,
+  dann Linienbau, dann Stapelung/Navigation. Keine frühe
+  komplexe Statik oder komplette Festungsverteidigung.
 - STARTWELT: zerstörte Stadt; Ruinen können Ressourcen,
   restaurierbare Gebäude, Wege und Fundstellen enthalten.
 - STIMMUNG: gemütlicher Wiederaufbau mit düsterer Vergangenheit.
