@@ -94,6 +94,9 @@ func _on_growth_finished() -> void:
 
 # Übergibt die Ernte an den Actor und setzt das Feld danach zurück.
 func _harvest(actor: Node3D) -> void:
+	# TODO 57.3: Prüfe vor der Übergabe mit can_receive_item(), ob die gesamte
+	# Ernte hineinpasst. Bleibt Rest übrig, darf das Feld nicht auf EMPTY gesetzt
+	# werden, weil wiederholtes Ernten sonst bereits angenommene Mengen dupliziert.
 	print(
 		actor.name,
 		" erntet ",

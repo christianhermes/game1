@@ -143,6 +143,9 @@ func _input(event: InputEvent) -> void:
 # Wandelt die zweidimensionale Mausposition in einen Strahl durch die
 # dreidimensionale Spielwelt um und fragt den ersten getroffenen Körper ab.
 func _select_at_mouse(mouse_position: Vector2) -> void:
+	# TODO 61: Eine ausgewählte StorageContainer-Kiste öffnet das StorageMenu mit
+	# Spieler- und Kisteninventar. WorkstationMenu und StorageMenu dürfen niemals
+	# gleichzeitig offen bleiben. Details stehen in OFFLINE_AUFGABEN.md.
 	var ray_origin := camera.project_ray_origin(mouse_position)
 	var ray_direction := camera.project_ray_normal(mouse_position)
 	var ray_end := ray_origin + ray_direction * 1000.0

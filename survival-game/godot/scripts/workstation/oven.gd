@@ -6,6 +6,8 @@ const REQUIRED_AMOUNT := 2
 const BREAD_OUTPUT := 1
 
 func _use_station(actor: Node3D) -> void:
+	# TODO 57.4: Vor dem Verbrauch des Mehls prüfen, ob das Brot vollständig in
+	# das Inventar passt. Bei Platzmangel weder Zutat noch Output verändern.
 	if not actor.has_method("try_use_selected_item"):
 		return
 

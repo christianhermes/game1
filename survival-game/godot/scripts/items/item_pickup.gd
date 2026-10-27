@@ -40,6 +40,9 @@ func get_world_info_text() -> String:
 
 # actor ist der Node, der mit dem Pickup interagiert, normalerweise der Player.
 func interact(actor: Node3D) -> void:
+	# TODO 57.2: receive_item() liefert später die Restmenge. Speichere diesen Rest
+	# wieder in amount und entferne das Pickup nur bei amount == 0. So bleibt ein
+	# nicht oder nur teilweise aufgenommener Stapel sichtbar in der Spielwelt.
 	# Die Methodenprüfung hält das Pickup von einer bestimmten Actor-Klasse
 	# unabhängig. Jeder passende Node kann später Gegenstände aufnehmen.
 	if actor.has_method("receive_item"):

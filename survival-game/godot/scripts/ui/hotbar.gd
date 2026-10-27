@@ -89,6 +89,9 @@ func select_slots(index: int) -> void:
 
 # Reagiert auf jede Mengenänderung im Inventar.
 func _on_inventory_changed(item_id: StringName, new_amount: int) -> void:
+	# TODO 56.5: Dieses Signal soll auch nach der Slot-Umstellung weiterhin die
+	# Gesamtmenge einer Item-ID liefern. Dadurch bleibt die Hotbar Schnellzugriff
+	# und muss keine internen Inventarslots kennen.
 	# Zuerst wird geprüft, ob der Gegenstand bereits einen Slot besitzt.
 	var item_index: int = slot_item_ids.find(item_id)
 

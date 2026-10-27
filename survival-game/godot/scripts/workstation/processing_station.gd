@@ -103,6 +103,9 @@ func move_queued_order(order_id: int, direction: int) -> bool:
 
 
 func _use_station(actor: Node3D) -> void:
+	# TODO 57.4: Prüfe vor dem Verbrauch der Zutaten, ob sämtliche Outputs in das
+	# Zielinventar passen. Ein voller Output darf niemals Zutaten vernichten. Die
+	# drei alten Spezialstationen werden im selben Arbeitsschritt mit abgesichert.
 	if recipe == null:
 		push_warning(display_name + " besitzt kein Rezept.")
 		return

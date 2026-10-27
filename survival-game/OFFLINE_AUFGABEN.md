@@ -1,3 +1,363 @@
+# Offline-Aufgaben: Lager V1
+
+## Ziel des Meilensteins
+
+Am Ende dieses Abschnitts besitzt der Spieler ein begrenztes Slotinventar und
+kann eine physische Holzkiste bauen. Jede Kiste besitzt eigene Bestände. Items
+lassen sich ohne Verlust zwischen Spieler und Kiste übertragen.
+
+Verbindliche Regeln:
+
+- Standard-Stapelgröße: 99.
+- Werkzeuge: Stapelgröße 1.
+- Andere Items dürfen über ihre Definition eine kleinere Grenze erhalten.
+- 20 Spielerslots und 12 Kistenslots sind nur leicht änderbare Testwerte.
+- Kein Gewichtssystem.
+- Keine globale Siedlungslagerung.
+- Erlernte Zauber sind später Fähigkeiten und keine Inventaritems.
+- Schriftrollen, Runen und magische Materialien verwenden `MAGIC_ITEM`.
+- Noch keine automatische Lieferung, Lagerfilter oder Werkstationsversorgung.
+
+Bearbeite die Aufgaben in Reihenfolge. Melde nach jeder Aufgabe `fertig`, damit
+die Umsetzung geprüft wird. Fertige TODO-Kommentare werden anschließend in
+dauerhafte Dokumentation umgewandelt.
+
+### Aufgabe 54 – Itemtypen und gemeinsamen Katalog fertigstellen
+
+Dateien:
+
+- `godot/scripts/inventory/item_definition.gd`
+- `godot/scripts/inventory/item_catalog.gd`
+
+Setze die vier vorbereiteten TODOs um.
+
+`ItemDefinition.get_effective_max_stack_size()`:
+
+1. Bei `ItemType.TOOL` immer `1` zurückgeben.
+2. Bei allen anderen Typen `max_stack_size` verwenden.
+3. Den Wert mit `clampi()` zwischen `1` und `99` halten.
+
+`ItemDefinition.is_valid()` prüft:
+
+- `id` ist nicht leer,
+- `display_name` ist nicht leer,
+- die effektive Stapelgröße ist mindestens 1.
+
+`ItemCatalog.get_definition()` durchsucht `definitions` nach einer gültigen,
+passenden ID. Nullwerte und ungültige Definitionen werden übersprungen.
+
+`ItemCatalog.is_valid()` lehnt ab:
+
+- Nullwerte,
+- ungültige Definitionen,
+- doppelte IDs.
+
+Erstelle anschließend im neuen Ordner `godot/data/items/` je eine
+`ItemDefinition`-Ressource:
+
+| ID | Anzeigename | Typ | maximale Stapelgröße |
+|---|---|---|---:|
+| `wood` | Wood | MATERIAL | 99 |
+| `stone` | Stone | MATERIAL | 99 |
+| `wheat_seed` | Wheat Seed | MATERIAL | 99 |
+| `wheat` | Wheat | CONSUMABLE | 99 |
+| `straw` | Straw | MATERIAL | 99 |
+| `flour` | Flour | MATERIAL | 99 |
+| `bread` | Bread | CONSUMABLE | 99 |
+| `hammer` | Hammer | TOOL | 99 im Inspector, effektiv trotzdem 1 |
+
+Erstelle `item_catalog.tres` und trage alle acht Definitionen einmal ein.
+
+Test:
+
+- Katalog ist gültig.
+- `wood` wird gefunden und hat effektive Grenze 99.
+- `hammer` wird gefunden und hat effektive Grenze 1.
+- Eine unbekannte ID liefert null.
+
+### Aufgabe 55 – Einen einzelnen Inventarstapel fertigstellen
+
+Datei: `godot/scripts/inventory/inventory_stack.gd`.
+
+Setze die drei TODOs um:
+
+1. `is_empty()` prüft leere ID oder Menge kleiner/gleich 0.
+2. `clear()` setzt ID auf einen leeren `StringName` und Menge auf 0.
+3. `get_free_space(definition)` liefert nur dann Platz, wenn Definition gültig
+   ist und ihre ID zum Stapel passt. Ergebnis ist effektive Grenze minus Menge,
+   aber niemals kleiner als 0.
+
+Wichtig: Ein leerer Slot wird noch nicht von `get_free_space()` befüllt. Das
+entscheidet später `Inventory.add_item()`, weil nur dort der Katalog bekannt ist.
+
+Test:
+
+- `wood x98` besitzt einen freien Platz.
+- `wood x99` besitzt keinen freien Platz.
+- `hammer x1` besitzt keinen freien Platz.
+- Eine Stone-Definition liefert für einen Wood-Stapel 0.
+- `clear()` macht den Stapel leer.
+
+### Aufgabe 56 – Inventory auf Slots und Stapel umstellen
+
+Dateien:
+
+- `godot/scripts/inventory/inventory.gd`
+- `godot/scripts/ui/hotbar.gd`
+- `godot/main.tscn`
+
+Das vorhandene Dictionary wird erst entfernt, wenn die neuen Methoden fertig
+sind. Füge dem Inventory hinzu:
+
+- exportierte Referenz auf `ItemCatalog`,
+- exportierte `slot_capacity`, zunächst 20 beim Spieler,
+- `Array[InventoryStack]` für die Slots,
+- Signal `contents_changed`,
+- das vorhandene `inventory_changed(item_id, new_amount)` bleibt bestehen.
+
+Initialisierung:
+
+1. Katalog und Kapazität validieren.
+2. Genau `slot_capacity` voneinander unabhängige `InventoryStack`-Instanzen
+   erzeugen. Niemals dieselbe Resource mehrfach in das Array eintragen.
+
+Benötigte öffentliche Abfragen:
+
+- `get_amount(item_id)` summiert alle passenden Stapel.
+- `get_used_slot_count()` zählt nicht leere Slots.
+- `get_total_item_count()` summiert alle Mengen.
+- `get_slots_snapshot()` liefert Kopien für das UI, niemals das echte Array.
+- `get_add_capacity(item_id)` berechnet vorhandenen Stapelplatz plus freie Slots.
+- `can_add_item(item_id, amount)` prüft positive Menge, Definition und Kapazität.
+
+`add_item(item_id, amount)` liefert künftig die **Restmenge** zurück:
+
+1. Ungültige ID oder nicht positive Menge unverändert zurückgeben.
+2. Zuerst vorhandene, noch nicht volle Stapel auffüllen.
+3. Danach freie Slots mit neuen Stapeln belegen.
+4. Niemals die effektive Stapelgrenze überschreiten.
+5. Beide Änderungssignale erst nach tatsächlicher Änderung senden.
+6. Nicht eingelagerte Menge zurückgeben; `0` bedeutet vollständiger Erfolg.
+
+`remove_item()` behält seinen booleschen Rückgabewert:
+
+1. Vorher Gesamtmenge prüfen, damit die Entnahme ganz oder gar nicht erfolgt.
+2. Stapel nacheinander reduzieren.
+3. Leere Stapel mit `clear()` freigeben.
+4. Beide Signale korrekt senden.
+
+Die Hotbar verwendet weiterhin nur `inventory_changed` und die Gesamtmenge.
+Sie wird ausdrücklich nicht zum vollständigen Inventarfenster umgebaut.
+
+Weise dem Inventory-Kind des Players in `main.tscn` den gemeinsamen Katalog und
+20 Testslots zu.
+
+Test:
+
+- 100 Wood erzeugt zwei Stapel: 99 und 1.
+- Zwei Hammer erzeugen zwei Stapel mit je 1.
+- Entfernen über Stapelgrenzen erhält die richtige Gesamtmenge.
+- Hotbar zeigt weiterhin die Gesamtmenge einer ID.
+- Bauen, Pflanzen und Essen funktionieren noch.
+
+### Aufgabe 57 – Jede Itemquelle gegen volle Inventare absichern
+
+Betroffene Dateien tragen bereits Hinweise mit `TODO 57`:
+
+- `player.gd`
+- `item_pickup.gd`
+- `farm_plot.gd`
+- `processing_station.gd`
+- `millstone.gd`
+- `oven.gd`
+- `threshing_station.gd`
+
+Ändere `Player.receive_item()` so, dass die Restmenge von `Inventory.add_item()`
+zurückgegeben wird. Ergänze Abfragen, ob ein einzelner Output beziehungsweise
+eine vollständige Liste aus `ItemAmount` aufgenommen werden kann.
+
+Für mehrere unterschiedliche Outputs darf nicht jede ID isoliert geprüft
+werden: Zwei Outputarten können um denselben letzten freien Slot konkurrieren.
+Simuliere die Einlagerung deshalb auf Kopien der Slots oder ergänze im Inventory
+eine Abfrage, die eine komplette Liste gemeinsam prüft, ohne echte Mengen zu
+verändern.
+
+Regeln pro Quelle:
+
+- Pickup: Rest bleibt als Menge im Pickup; nur Rest 0 entfernt die Node.
+- Feld: Nur vollständig ernten, wenn der gesamte Ertrag passt. Sonst READY.
+- Werkstation: Erst gesamten Outputplatz prüfen, dann Zutaten verbrauchen.
+- Mehrere Outputs: ganz oder gar nicht; keine teilweise Produktion.
+
+Test:
+
+- Volles Inventar: Pickup bleibt vollständig liegen.
+- Platz für 10 von 20: Pickup nimmt 10 auf und behält sichtbar Menge 10.
+- Volles Inventar: Erntereifes Feld bleibt erntereif.
+- Volles Inventar: Werkstation verbraucht keine Zutaten.
+
+### Aufgabe 58 – Verlustfreie Inventartransfers
+
+Datei: `godot/scripts/inventory/inventory.gd`, vorbereiteter `TODO 58`.
+
+Ergänze `transfer_to(target, item_id, requested_amount)`. Rückgabewert ist die
+tatsächlich bewegte Menge.
+
+Ablauf:
+
+1. Ziel, ID und positive Wunschmenge prüfen.
+2. Bewegungsmenge auf Quellbestand und Zielkapazität begrenzen.
+3. Genau diese Menge aus der Quelle entfernen.
+4. Menge dem Ziel hinzufügen.
+5. Ein unerwarteter Rest wird sofort in die Quelle zurückgelegt.
+6. Nur die wirklich eingelagerte Menge zurückgeben.
+
+Die Rückgabe ist sicher, weil das Entfernen gerade den erforderlichen Platz in
+der Quelle freigemacht hat. Trotzdem muss der Code den Rest ausdrücklich
+behandeln und darf ihn nicht ignorieren.
+
+Test:
+
+- 50 Wood von A nach B: Gesamtmenge bleibt unverändert.
+- B hat nur Platz für 10: Genau 10 werden bewegt.
+- B ist voll: Rückgabewert 0, beide Inventare unverändert.
+- Hammer belegt auch nach einem Transfer einen eigenen Slot.
+- Transfer an dasselbe Inventory wird abgelehnt.
+
+### Aufgabe 59 – Physische Holzkiste mit eigenem Inventar
+
+Datei: `godot/scripts/inventory/storage_container.gd`.
+
+Erstelle `godot/scenes/storage/WoodChest.tscn`:
+
+1. Root `StaticBody3D`, Name `WoodChest`.
+2. Skript `storage_container.gd`.
+3. Gruppe `build_occupant`.
+4. `display_name = Holzkiste`, passende Lebenspunkte.
+5. Einfaches BoxMesh und passende CollisionShape3D.
+6. Kind `Inventory` mit `inventory.gd`.
+7. Gemeinsamen ItemCatalog zuweisen.
+8. Zunächst 12 Testslots einstellen.
+
+Setze TODO 59.1 und 59.2 um. Für die Anzeige benötigt Inventory öffentliche
+Methoden; `StorageContainer` darf nie direkt dessen echtes Slot-Array verändern.
+
+Platziere für diesen Zwischentest zwei Kisten direkt im Editor. Noch nicht über
+das Baumenü bauen.
+
+Test:
+
+- Beide Kisten zeigen 0/12 belegte Slots.
+- Ihre Inventory-Nodes sind verschiedene Instanzen.
+- Eine Änderung in Kiste A verändert Kiste B nicht.
+
+### Aufgabe 60 – Lagerfenster und manuelle Übertragung
+
+Dateien:
+
+- `godot/scripts/ui/storage_menu.gd`
+- neue Szene `godot/scenes/ui/storage_menu.tscn`
+
+Baue ein übersichtliches Fenster:
+
+- Titel und Schließen-Button,
+- linke Spalte `Spieler`,
+- rechte Spalte `Holzkiste`,
+- je ein `VBoxContainer` für dynamische Stapelzeilen.
+
+Setze TODO 60.1 bis 60.4 um. Zeilen zeigen mindestens:
+
+- Anzeigename,
+- aktuelle Menge,
+- effektive Stapelgrenze,
+- Button zum Übertragen in die andere Richtung.
+
+Ein Klick versucht zunächst, den ganzen gewählten Stapel zu übertragen. Passt
+nur ein Teil, bewegt `transfer_to()` nur den möglichen Anteil. Mengenwahl und
+Stapelaufteilung folgen später als Komfortfunktion.
+
+Das Menü arbeitet ausschließlich mit Slotkopien aus `get_slots_snapshot()`.
+Buttons binden Quelle, Ziel, ID und Wunschmenge an ihren Callback.
+
+Test:
+
+- Öffnen zeigt beide Inventare.
+- Einlagern aktualisiert beide Spalten sofort.
+- Entnehmen funktioniert in Gegenrichtung.
+- Volles Ziel erzeugt weder Verlust noch Duplikation.
+- Schließen trennt Signale; mehrfaches Öffnen erzeugt keine doppelten Callbacks.
+
+### Aufgabe 61 – Kistenauswahl mit Main verbinden
+
+Dateien:
+
+- `godot/main.tscn`
+- `godot/scripts/main.gd`, vorbereiteter `TODO 61`
+
+Füge `StorageMenu` unter `UI` ein und speichere in Main eine Referenz darauf.
+
+Beim Linksklick auf `StorageContainer`:
+
+1. Bewohnerauswahl aufheben.
+2. WorkstationMenu schließen.
+3. StorageMenu mit Player- und Kisteninventar öffnen.
+4. Das allgemeine Infofenster darf parallel die Kistenübersicht anzeigen.
+
+Beim Anklicken einer Werkstation, beim Moduswechsel und beim Klick ins Leere
+wird das StorageMenu geschlossen. StorageMenu und WorkstationMenu dürfen nie
+gleichzeitig geöffnet sein.
+
+Test mit zwei Editor-Kisten:
+
+- Jede öffnet ihren eigenen Inhalt.
+- Wechsel zwischen beiden zeigt sofort den richtigen Bestand.
+- Wechsel zu Werkstation oder Charaktermodus schließt das Kistenfenster.
+
+### Aufgabe 62 – Holzkiste über das Bausystem errichten
+
+Erstelle `godot/data/buildings/wood_chest.tres`:
+
+- Name `Holzkiste`,
+- fertige Szene `WoodChest.tscn`,
+- vorläufig 5 Wood,
+- Werkzeug Hammer,
+- 4 Arbeitsschritte,
+- `placement_type = OBJECT`,
+- `footprint = 1 × 1`,
+- Rotation erlaubt.
+
+Trage das Rezept in `BuildManager.available_recipes` ein.
+
+Prüfe nach dem Bau:
+
+- Kiste belegt die Object-Schicht derselben Zelle.
+- Boden und Kiste dürfen dieselbe Zelle gemeinsam verwenden.
+- Zwei Kisten dürfen nicht dieselbe Object-Zelle belegen.
+- Baustelle wird vollständig beliefert und gebaut.
+- Fertige Kiste besitzt ein leeres, eigenes 12-Slot-Inventar.
+- Auswahl öffnet Info- und Lagerfenster.
+
+### Aufgabe 63 – Abschlussprüfung Lager V1
+
+Führe den Test in einem frisch gestarteten Spiel durch:
+
+1. 100 Wood aufnehmen: Stapel 99 und 1.
+2. Zwei Hammer testweise hinzufügen: zwei getrennte Einerstapel.
+3. Zwei Holzkisten bauen.
+4. Wood teilweise in Kiste A und anschließend in Kiste B verschieben.
+5. Inhalt beider Kisten bleibt unabhängig.
+6. Spielerinventar vollständig füllen.
+7. Weiteres Pickup bleibt ganz oder teilweise in der Welt.
+8. Volle Kiste vernichtet beim Einlagern nichts.
+9. Feld und Werkstation vernichten bei vollem Inventar keine Items.
+10. Gebäude-, Raum-, Bau- und Produktionssystem starten weiterhin fehlerfrei.
+
+Nach Aufgabe 63 werden sämtliche erledigten TODOs in dauerhafte Dokumentation
+umgewandelt. Erst danach folgen automatische NPC-Transporte, Reservierungen,
+Lagerfilter und lokale Werkstationsversorgung.
+
+---
+
 # Offline-Aufgaben: Bauen V1
 
 ## Abgeschlossener Meilenstein: Baukatalog, Fundament und Bodenplatte

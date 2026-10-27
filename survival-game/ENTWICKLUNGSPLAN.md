@@ -66,6 +66,10 @@ Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen t
 ### Weiterhin gültige Kernregeln
 - Stilisiertes Low-Poly-3D; kleine, testbare Entwicklungsschritte; wenig Grind.
 - Spielerinventar: begrenzte Slots und Stapel, Rucksack-Upgrades, **kein Gewichtssystem**.
+- Inventarstapel verwenden standardmäßig maximal **99** Gegenstände. Werkzeuge
+  besitzen effektiv Stapelgröße **1**; kleinere Grenzen bleiben über datengetriebene
+  Itemdefinitionen möglich. Physische magische Items erhalten einen eigenen Typ,
+  während erlernte Zauber später getrennt als Fähigkeiten verwaltet werden.
 - Physische, voneinander unabhängige Kisten; Siedlungsübersicht ist nur lesend. Kein globaler, ortsunabhängiger Materialzugriff.
 - Werkstationen: Zugriff auf Kisten im selben geschlossenen Raum bzw. in einem kleinen lokalen Außenradius; weitere Wege erfordern physischen NPC-Transport.
 - Materialreservierungen verhindern Doppelverwendung, Transporte verlieren/duplizieren nichts.

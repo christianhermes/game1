@@ -6,6 +6,8 @@ const REQUIRED_AMOUNT := 1
 const FLOUR_OUTPUT := 2
 
 func _use_station(actor: Node3D) -> void:
+	# TODO 57.4: Vor dem Verbrauch des Saatguts prüfen, ob der vollständige
+	# Mehl-Output in das Inventar passt. Bei Platzmangel nichts verändern.
 	if not actor.has_method("try_use_selected_item"):
 		return
 
