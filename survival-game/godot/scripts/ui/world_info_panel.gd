@@ -9,6 +9,7 @@ extends PanelContainer
 @onready var details_label: Label = $Margin/VBox/DetailsLabel
 
 var current_target: Node
+var additional_info_text := ""
 
 
 func _ready() -> void:
@@ -27,7 +28,7 @@ func _process(_delta: float) -> void:
 
 ## Öffnet das Fenster nur für Nodes, die die gemeinsame Informationsschnittstelle
 ## vollständig anbieten. Der Rückgabewert zeigt, ob das Ziel angezeigt wurde.
-func show_target(target: Node) -> bool:
+func show_target(target: Node, additional_text := "") -> bool:
 	if (
 		target == null
 		or not target.has_method("get_world_info_title")
@@ -37,6 +38,7 @@ func show_target(target: Node) -> bool:
 		return false
 
 	current_target = target
+	additional_info_text = additional_text
 	visible = true
 	_refresh_content()
 	return true
@@ -44,9 +46,13 @@ func show_target(target: Node) -> bool:
 
 func close_panel() -> void:
 	current_target = null
+	additional_info_text = ""
 	visible = false
 
 
 func _refresh_content() -> void:
 	title_label.text = str(current_target.call("get_world_info_title"))
-	details_label.text = str(current_target.call("get_world_info_text"))
+	var details := str(current_target.call("get_world_info_text"))
+	if not additional_info_text.is_empty():
+		details += "\n" + additional_info_text
+	details_label.text = details

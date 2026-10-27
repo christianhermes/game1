@@ -24,6 +24,7 @@ const BASE_CAMERA_ZOOM_STEP := 2.0
 # @onready bedeutet: Godot sucht diese Nodes erst, wenn die Szene bereit ist.
 @onready var camera: Camera3D = $Camera3D
 @onready var player: CharacterBody3D = $Player
+@onready var build_grid: BuildGrid = $BuildGrid
 @onready var build_manager: BuildManager = $BuildManager
 @onready var hotbar = $UI/Hotbar
 @onready var control_mode_label: Label = $UI/ControlModeLabel
@@ -164,7 +165,13 @@ func _select_at_mouse(mouse_position: Vector2) -> void:
 		var collider: Object = hit.get("collider")
 		# Jedes Weltobjekt entscheidet selbst, welche Informationen es anbietet.
 		# Unbekannte Treffer (zum Beispiel der Boden) schließen das Fenster.
-		world_info_panel.show_target(collider as Node)
+		var selected_node := collider as Node
+		var room_info := ""
+		if selected_node != null:
+			# Das Raster ergänzt nur bei fertigen Boden- oder Deckenbauteilen einen
+			# Raumstatus. Alle anderen Elemente behalten ihre bisherige Anzeige.
+			room_info = build_grid.get_room_info_for_owner(selected_node)
+		world_info_panel.show_target(selected_node, room_info)
 		if collider is ProcessingStation:
 			_set_selected_actor(null)
 			workstation_menu.open_for_station(collider as ProcessingStation)

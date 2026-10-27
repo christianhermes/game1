@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://bwghivbmg442i"]
+
+[ext_resource type="Script" uid="uid://bprjhqae46a6f" path="res://scripts/building/finished_building.gd" id="1_06uiv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r6c0r"]
+albedo_color = Color(0.5635282, 0.33898517, 0.10750892, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_post"]
+size = Vector3(0.3, 2.4, 0.3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_post"]
+size = Vector3(0.3, 2.4, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_top"]
+size = Vector3(2, 0.6, 0.3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_top"]
+size = Vector3(2, 0.6, 0.3)
+
+[node name="WoodDoor" type="StaticBody3D" unique_id=1134070387 groups=["build_occupant"]]
+script = ExtResource("1_06uiv")
+display_name = "Holztür"
+max_health = 120.0
+
+[node name="LeftMesh" type="MeshInstance3D" parent="." unique_id=862534006]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.85, 1.2, 0)
+material_overlay = SubResource("StandardMaterial3D_r6c0r")
+mesh = SubResource("BoxMesh_post")
+
+[node name="LeftCollisionShape3D" type="CollisionShape3D" parent="." unique_id=1510837574]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.85, 1.2, 0)
+shape = SubResource("BoxShape3D_post")
+
+[node name="RightMesh" type="MeshInstance3D" parent="." unique_id=1438823663]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, 1.2, 0)
+material_overlay = SubResource("StandardMaterial3D_r6c0r")
+mesh = SubResource("BoxMesh_post")
+
+[node name="RightCollisionShape3D" type="CollisionShape3D" parent="." unique_id=1840398409]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, 1.2, 0)
+shape = SubResource("BoxShape3D_post")
+
+[node name="UpperMesh" type="MeshInstance3D" parent="." unique_id=705776813]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0)
+material_overlay = SubResource("StandardMaterial3D_r6c0r")
+mesh = SubResource("BoxMesh_top")
+
+[node name="UpperCollisionShape3D" type="CollisionShape3D" parent="." unique_id=1274529389]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0)
+shape = SubResource("BoxShape3D_top")

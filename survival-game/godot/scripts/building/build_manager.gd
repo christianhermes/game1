@@ -6,6 +6,8 @@ signal selected_recipe_changed(recipe: BuildRecipe)
 
 # Godot verwendet für Drehungen Radiant. PI / 2 entspricht genau 90 Grad.
 const PLACEMENT_ROTATION_STEP := PI / 2.0
+const MIN_BUILD_LEVEL := 0
+const MAX_BUILD_LEVEL := 3
 const BUILD_OCCUPANT_GROUP := &"build_occupant"
 const VALID_PREVIEW_COLOR := Color(0.25, 0.76, 0.0, 1.0)
 const INVALID_PREVIEW_COLOR := Color(0.9, 0.15, 0.1, 1.0)
@@ -32,7 +34,16 @@ var current_grid_origin := Vector3i.ZERO
 var current_rotation_quarters := 0
 var placement_rotation_y := 0.0
 var current_placement_valid := false
+var current_build_level := MIN_BUILD_LEVEL
 
+
+## Verschiebt die aktive Bauebene innerhalb des vorläufig unterstützten Bereichs.
+func _change_build_level(change: int) -> void:
+	current_build_level = clampi(
+		current_build_level + change,
+		MIN_BUILD_LEVEL,
+		MAX_BUILD_LEVEL,
+	)
 
 func _ready() -> void:
 	set_control_enabled(false)
@@ -184,6 +195,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		build_mode = not build_mode
 		placement_preview.visible = build_mode
 		if not build_mode:
+			current_build_level = MIN_BUILD_LEVEL
 			_reset_placement_rotation()
 		build_mode_changed.emit(build_mode)
 		get_viewport().set_input_as_handled()
@@ -192,7 +204,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if build_mode and event.is_action_pressed("rotate_building"):
 		_rotate_placement()
 		get_viewport().set_input_as_handled()
+		return
 
+	if build_mode and event.is_action_pressed("build_level_down"):
+		_change_build_level(-1)
+		get_viewport().set_input_as_handled()
+		return
+	if build_mode and event.is_action_pressed("build_level_up"):
+		_change_build_level(1)
+		get_viewport().set_input_as_handled()
+		return
 
 ## Dreht die Bauvorschau in festen 90-Grad-Schritten und hält den gespeicherten
 ## Winkel mit wrapf() innerhalb einer vollständigen Umdrehung.
@@ -286,6 +307,10 @@ func _get_snapped_build_position(mouse_position: Vector2) -> Variant:
 		selected_recipe,
 		current_rotation_quarters,
 	)
+	# Die gewählte Ebene ist ein logischer Rasterindex und keine Meterangabe.
+	# Erst die Rückumrechnung ins Weltkoordinatensystem multipliziert sie mit
+	# BuildGrid.LEVEL_HEIGHT. Bestehende Weltobjekte bleiben davon unberührt.
+	current_grid_origin.y = current_build_level
 	if selected_recipe.placement_type == BuildRecipe.PlacementType.WALL_EDGE:
 		return build_grid.call(
 			"wall_edge_to_world",
@@ -389,6 +414,7 @@ func set_control_enabled(enabled: bool) -> void:
 	if not control_enabled:
 		var was_build_mode_active := build_mode
 		build_mode = false
+		current_build_level = MIN_BUILD_LEVEL
 		placement_preview.visible = false
 		current_placement_position = null
 		current_placement_valid = false

@@ -6,7 +6,9 @@ extends Node
 ## verwenden, beispielsweise Fundament, Boden und Einrichtung.
 
 const CELL_SIZE := 2.0
-const LEVEL_HEIGHT := 2.0
+# Drei Meter pro Ebene lassen einem zwei Meter hohen Bewohner ausreichend
+# Kopffreiheit unter einer Boden- beziehungsweise Deckenplatte.
+const LEVEL_HEIGHT := 3.0
 
 var foundation_occupancy: Dictionary = {}
 var floor_occupancy: Dictionary = {}
@@ -222,3 +224,137 @@ func replace_owner(current_owner: Node, new_owner: Node) -> void:
 		for key in occupancy:
 			if occupancy[key] == current_owner:
 				occupancy[key] = new_owner
+
+## Prüft, ob eine Rasterzelle sowohl einen Boden als auch eine Decke besitzt.
+## Die Decke ist derselbe Bodentyp genau eine logische Ebene höher. Die drei
+## Meter LEVEL_HEIGHT werden erst bei der Umrechnung in Weltkoordinaten benutzt.
+func _has_floor_and_ceiling(cell: Vector3i) -> bool:
+	# Vector3i.UP erhöht die logische Ebenennummer um eins, nicht um drei Meter.
+	var ceiling_cell := cell + Vector3i.UP
+	return (
+		floor_occupancy.has(cell)
+		and floor_occupancy.has(ceiling_cell)
+	)
+
+
+## Prüft, ob zwischen einer Zelle und ihrem direkten horizontalen Nachbarn eine
+## Wand oder Tür liegt. Beide Bauarten belegen dieselbe Wandkanten-Schicht.
+## Nord und Süd verwenden X-Kanten, West und Ost verwenden Z-Kanten.
+func _has_wall_between(cell: Vector3i, direction: Vector3i) -> bool:
+	# Der Kantenursprung beginnt an der nordwestlichen Ecke der Zelle. Nur Süd
+	# und Ost müssen auf die jeweils gegenüberliegende Rastergrenze verschoben werden.
+	var edge_origin := cell
+	var rotation_quarters := 0
+
+	if direction == Vector3i(0, 0, -1):
+		# Nordkante: X-Richtung am unveränderten Zellursprung.
+		rotation_quarters = 0
+	elif direction == Vector3i(0, 0, 1):
+		# Südkante: X-Richtung an der nächsten Z-Grenze.
+		edge_origin.z += 1
+		rotation_quarters = 0
+	elif direction == Vector3i(-1, 0, 0):
+		# Westkante: Z-Richtung am unveränderten Zellursprung.
+		rotation_quarters = 1
+	elif direction == Vector3i(1, 0, 0):
+		# Ostkante: Z-Richtung an der nächsten X-Grenze.
+		edge_origin.x += 1
+		rotation_quarters = 1
+	else:
+		# Diagonale und vertikale Richtungen sind keine Zellseiten.
+		return false
+
+	var edge_key := get_wall_edge_key(edge_origin, rotation_quarters)
+	return wall_edge_occupancy.has(edge_key)
+
+
+## Sucht von einer Startzelle aus alle verbundenen Zellen eines geschlossenen
+## Raums. Ein leeres Ergebnis bedeutet, dass Boden, Decke oder eine Begrenzung
+## fehlt. Türen zählen wie Wände als geschlossene Raumkante.
+func find_closed_room(start_cell: Vector3i) -> Array[Vector3i]:
+	# Nur die vier horizontalen Nachbarn gehören zur aktuellen Stockwerksebene.
+	var directions: Array[Vector3i] = [
+		Vector3i(-1, 0, 0),
+		Vector3i(1, 0, 0),
+		Vector3i(0, 0, -1),
+		Vector3i(0, 0, 1),
+	]
+	var cells_to_check: Array[Vector3i] = [start_cell]
+	var visited: Dictionary = {}
+	var room_cells: Array[Vector3i] = []
+
+	while not cells_to_check.is_empty():
+		# Die letzte vorgemerkte Zelle wird entnommen. Für das Ergebnis ist es
+		# unerheblich, ob die Liste als Stapel oder Warteschlange abgearbeitet wird.
+		var current_cell: Vector3i = cells_to_check.pop_back()
+
+		# Eine bereits geprüfte Zelle darf weder erneut ausgewertet noch erneut
+		# in das Ergebnis aufgenommen werden.
+		if visited.has(current_cell):
+			continue
+
+		# Erreicht die Suche eine Zelle ohne vollständige Flächen, führt dort eine
+		# Öffnung aus dem Raum. Das bisherige Teilergebnis wird deshalb verworfen.
+		if not _has_floor_and_ceiling(current_cell):
+			return room_cells
+
+		visited[current_cell] = true
+
+		for direction in directions:
+			# Eine vorhandene Wand oder Tür beendet die Suche nur an dieser Seite.
+			if _has_wall_between(current_cell, direction):
+				continue
+
+			# Ohne Begrenzung gehört der direkte Nachbar zum selben möglichen Raum
+			# und wird später vollständig auf Boden und Decke geprüft.
+			var neighbor: Vector3i = current_cell + direction
+			if not visited.has(neighbor):
+				cells_to_check.append(neighbor)
+
+	# Dictionary-Keys werden zum klar typisierten Ergebnisarray übertragen.
+	for visited_cell in visited:
+		room_cells.append(visited_cell)
+
+	return room_cells
+
+
+## Liefert die Raumangaben für ein ausgewähltes Boden- oder Deckenbauteil.
+## Andere Bauarten erhalten keinen Zusatztext. Bei einer Decke wird zusätzlich
+## die Zelle darunter geprüft, weil dieselbe Platte dort den Raum abschließt.
+func get_room_info_for_owner(owner: Node) -> String:
+	if owner == null:
+		return ""
+
+	var owner_is_floor := false
+	var checked_start_cells: Dictionary = {}
+	for occupied_cell in floor_occupancy:
+		if floor_occupancy[occupied_cell] != owner:
+			continue
+
+		owner_is_floor = true
+		var start_candidates: Array[Vector3i] = [
+			occupied_cell,
+			occupied_cell - Vector3i.UP,
+		]
+		for start_cell in start_candidates:
+			# Mehrzellige Böden können dieselbe mögliche Raumzelle mehrfach liefern.
+			if checked_start_cells.has(start_cell):
+				continue
+			checked_start_cells[start_cell] = true
+
+			var room_cells := find_closed_room(start_cell)
+			if room_cells.is_empty():
+				continue
+
+			var area_square_meters := roundi(
+				room_cells.size() * CELL_SIZE * CELL_SIZE,
+			)
+			return "Raum: Geschlossen\nGröße: %d Zellen (%d m²)" % [
+				room_cells.size(),
+				area_square_meters,
+			]
+
+	if owner_is_floor:
+		return "Raum: Offen oder unvollständig"
+
+	return ""

@@ -7,7 +7,7 @@ extends Area3D
 # Gegenstands-ID und Menge, die beim Aufheben ins Inventar gelangen.
 @export var world_id: StringName = &""
 @export var item_id: StringName = &""
-@export_range(1, 99, 1) var amount: int = 1
+@export_range(1, 999, 1) var amount: int = 1
 
 
 # Registriert dieses Objekt als mögliche Interaktion für den Spieler.
