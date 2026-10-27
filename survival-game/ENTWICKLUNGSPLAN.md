@@ -54,6 +54,15 @@ Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen t
 - **Später optional:** Raumübergreifende Produktionsketten, Auftragsreihenfolgen, Zielbestände wie „20 Brote halten“, automatische Zwischenproduktplanung. **Nicht** Teil der ersten Raumversion.
 - **Umbauten:** Raumgrenzen, fehlende Pflichtobjekte, Raumteilungen/-zusammenlegungen und unzugängliche Arbeitsplätze müssen Status/Zuordnung aktualisieren; Materialien bleiben in ihren realen Behältern.
 
+### Beschlossen: Mauerbau B – modulare massive Steinbefestigungen (2026-10-27)
+- **Drei Bauarten:** gewöhnliche Haus-/Werkstattwände auf Rasterkanten für Räume; frühe, per Ziehen planbare Holzpalisaden aus eingerammten Stämmen; später massive Stadt-/Wehrmauern aus großen Steinblöcken auf echten Rasterflächen.
+- **Steinmauer Variante B:** Steinblöcke sind größere modulare Mauerabschnitte, **keine einzeln gesetzten Minecraft-Steine**. Abschnitte können in der Höhe gestapelt und per Ziehen als Linie geplant werden. Benachbarte Segmente sollen optisch sauber anschließen.
+- **Begehbarkeit:** Die Oberseite ausreichend breiter Steinblöcke soll grundsätzlich begehbar sein, **sofern ein gültiger Zugang** (z. B. Treppe) besteht und die Navigation funktioniert. Zusätzliche Wehrgang-/Plattformbauteile erweitern schmale oder besondere Abschnitte; Brüstungen und Zinnen sind optional separat platzierbare Schutzaufbauten.
+- **Ausbau:** zunächst Steinmauer ohne Wehrgang nutzbar; später Treppen, Wehrgänge, Zinnen, Türme und Torhäuser. Palisaden können repariert, verstärkt, abgebaut und Materialien teilweise wiederverwendet werden; keine automatische Aufwertung/Materialteleportation.
+- **Einheitliches Bausystem:** Einzelbauteile und komplette, nachträglich veränderbare Gebäudevorlagen nutzen dieselben BuildRecipe-/BuildGrid-/ConstructionSite-Regeln. Linienziehen erzeugt einzelne reguläre Baustellen, keine unteilbare Sondermauer.
+- **Technische Reihenfolge:** zuerst Raster-/Höhenbelegung und Bauvalidierung absichern, dann Palisaden-Linienwerkzeug, massive Steinblock-Segmente und Anschlüsse; anschließend Stapelung, Treppen, dynamische Navigation und begehbare Mauern; Deckung/Kampf und komplexe Befestigungen später. Kleine, separat testbare Meilensteine; keine vorzeitige Vollimplementierung.
+- **Offen:** genaue Blockabmessungen, Kosten, Haltbarkeit, Bauboni, Wiederverwendungsquote und Detailregeln für Statik/Deckung.
+
 ### Weiterhin gültige Kernregeln
 - Stilisiertes Low-Poly-3D; kleine, testbare Entwicklungsschritte; wenig Grind.
 - Spielerinventar: begrenzte Slots und Stapel, Rucksack-Upgrades, **kein Gewichtssystem**.
