@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://bwlg8i2axnwgj"]
+
+[ext_resource type="Script" uid="uid://8x2fpxtpc2r0" path="res://scripts/inventory/storage_container.gd" id="1_wwsak"]
+[ext_resource type="Script" uid="uid://cr5v0sbds6mjx" path="res://scripts/inventory/inventory.gd" id="2_odlgf"]
+[ext_resource type="Resource" uid="uid://c8d31ifj1bk4" path="res://data/items/item_catalog.tres" id="3_catalog"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_dsip5"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_lfxu0"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_lfxu0"]
+
+[node name="StorageContainer" type="StaticBody3D" unique_id=898018914 groups=["build_occupant"]]
+physics_material_override = SubResource("PhysicsMaterial_dsip5")
+script = ExtResource("1_wwsak")
+display_name = "Holzkiste"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=523888230]
+mesh = SubResource("BoxMesh_lfxu0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1375827872]
+shape = SubResource("BoxShape3D_lfxu0")
+
+[node name="Inventory" type="Node" parent="." unique_id=1461169415]
+script = ExtResource("2_odlgf")
+item_catalog = ExtResource("3_catalog")
+slot_capacity = 12
+metadata/_custom_type_script = "uid://cr5v0sbds6mjx"

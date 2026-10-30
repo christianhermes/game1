@@ -228,3 +228,45 @@ func transfer_to(
 			push_error("Inventartransfer konnte einen Rest nicht zurückbuchen.")
 
 	return moved_amount
+
+
+## Verschiebt ausschließlich aus dem angegebenen Quellslot. Diese Variante ist
+## für manuelle Inventarfenster gedacht, in denen der Spieler einen konkreten
+## sichtbaren Stapel anklickt. Der Rückgabewert ist die wirklich bewegte Menge.
+func transfer_slot_to(
+	target: Inventory,
+	source_slot_index: int,
+	requested_amount: int,
+) -> int:
+	if target == null or target == self or requested_amount <= 0:
+		return 0
+	if source_slot_index < 0 or source_slot_index >= slots.size():
+		return 0
+
+	var source_stack := slots[source_slot_index]
+	if source_stack == null or source_stack.is_empty():
+		return 0
+
+	var item_id := source_stack.item_id
+	var transfer_amount := mini(
+		requested_amount,
+		mini(source_stack.amount, target.get_add_capacity(item_id)),
+	)
+	if transfer_amount <= 0:
+		return 0
+
+	# Die Menge wird zunächst aus genau dem gewählten Slot reserviert. Sollte das
+	# Ziel wider Erwarten einen Rest ablehnen, landet er wieder in diesem Slot.
+	source_stack.amount -= transfer_amount
+	var target_remainder := target.add_item(item_id, transfer_amount)
+	source_stack.amount += target_remainder
+
+	var moved_amount := transfer_amount - target_remainder
+	if moved_amount <= 0:
+		return 0
+	if source_stack.amount == 0:
+		source_stack.clear()
+
+	contents_changed.emit()
+	inventory_changed.emit(item_id, get_amount(item_id))
+	return moved_amount

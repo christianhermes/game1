@@ -28,9 +28,10 @@ const BASE_CAMERA_ZOOM_STEP := 2.0
 @onready var build_manager: BuildManager = $BuildManager
 @onready var hotbar = $UI/Hotbar
 @onready var control_mode_label: Label = $UI/ControlModeLabel
-@onready var workstation_menu = $UI/WorkstationMenu
-@onready var world_info_panel = $UI/WorldInfoPanel
-@onready var build_menu = $UI/BuildMenu
+@onready var workstation_menu: WorkstationMenu = $UI/WorkstationMenu
+@onready var storage_menu: StorageMenu = $UI/StorageMenu
+@onready var world_info_panel: WorldInfoPanel = $UI/WorldInfoPanel
+@onready var build_menu: BuildMenu = $UI/BuildMenu
 
 # Diese Position ist das Ziel, auf das die Kamera schaut.
 var camera_target := Vector3.ZERO
@@ -142,10 +143,9 @@ func _input(event: InputEvent) -> void:
 
 # Wandelt die zweidimensionale Mausposition in einen Strahl durch die
 # dreidimensionale Spielwelt um und fragt den ersten getroffenen Körper ab.
+# Kisten und Werkstationen öffnen dabei jeweils nur ihr eigenes Menü. Das
+# allgemeine Informationsfenster darf parallel die Weltdaten des Ziels zeigen.
 func _select_at_mouse(mouse_position: Vector2) -> void:
-	# TODO 61: Eine ausgewählte StorageContainer-Kiste öffnet das StorageMenu mit
-	# Spieler- und Kisteninventar. WorkstationMenu und StorageMenu dürfen niemals
-	# gleichzeitig offen bleiben. Details stehen in OFFLINE_AUFGABEN.md.
 	var ray_origin := camera.project_ray_origin(mouse_position)
 	var ray_direction := camera.project_ray_normal(mouse_position)
 	var ray_end := ray_origin + ray_direction * 1000.0
@@ -162,6 +162,7 @@ func _select_at_mouse(mouse_position: Vector2) -> void:
 	# Wenn hit leer ist, soll die bisherige Auswahl aufgehoben werden.
 	if hit.is_empty():
 		workstation_menu.close_menu()
+		storage_menu.close_menu()
 		world_info_panel.close_panel()
 		_set_selected_actor(null)
 	else:
@@ -175,12 +176,30 @@ func _select_at_mouse(mouse_position: Vector2) -> void:
 			# Raumstatus. Alle anderen Elemente behalten ihre bisherige Anzeige.
 			room_info = build_grid.get_room_info_for_owner(selected_node)
 		world_info_panel.show_target(selected_node, room_info)
+		if collider is StorageContainer:
+			var selected_storage := collider as StorageContainer
+			_set_selected_actor(null)
+			workstation_menu.close_menu()
+			if not selected_storage.can_be_accessed_by(player):
+				storage_menu.close_menu()
+				world_info_panel.show_target(
+					selected_storage,
+					"Zu weit entfernt – gehe näher an die Kiste heran.",
+				)
+				return
+			storage_menu.open_for_storage(
+				player.inventory,
+				selected_storage.get_storage_inventory(),
+			)
+			return
 		if collider is ProcessingStation:
 			_set_selected_actor(null)
+			storage_menu.close_menu()
 			workstation_menu.open_for_station(collider as ProcessingStation)
 			return
 
 		workstation_menu.close_menu()
+		storage_menu.close_menu()
 		# Wähle nur Nodes aus der Gruppe selectable als Bewohner aus. Ein Treffer
 		# auf ein anderes Objekt hebt die bisherige Auswahl auf.
 		if collider != null and collider.is_in_group("selectable"):
@@ -315,6 +334,7 @@ func _apply_control_mode() -> void:
 		)
 	else:
 		workstation_menu.close_menu()
+		storage_menu.close_menu()
 		world_info_panel.close_panel()
 		camera_target = player.global_position
 		camera.size = DEFAULT_CAMERA_SIZE

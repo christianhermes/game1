@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="BuildRecipe" format=3 uid="uid://bh4i50sg2y5im"]
+
+[ext_resource type="PackedScene" uid="uid://bwlg8i2axnwgj" path="res://scenes/buildings/storage_container.tscn" id="1_vj1ni"]
+[ext_resource type="Script" uid="uid://bcjjfrinsxlao" path="res://scripts/inventory/item_amount.gd" id="2_ehxwu"]
+[ext_resource type="Script" uid="uid://cihlel7yctui3" path="res://scripts/building/build_recipe.gd" id="3_eu6hy"]
+
+[sub_resource type="Resource" id="Resource_72sye"]
+script = ExtResource("2_ehxwu")
+item_id = &"wood"
+amount = 5
+metadata/_custom_type_script = "uid://bcjjfrinsxlao"
+
+[resource]
+script = ExtResource("3_eu6hy")
+display_name = "Holzkiste"
+finished_scene = ExtResource("1_vj1ni")
+required_materials = Array[ExtResource("2_ehxwu")]([SubResource("Resource_72sye")])
+required_tool_id = &"hammer"
+required_work = 4
+placement_type = 3

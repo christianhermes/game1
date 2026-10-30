@@ -49,6 +49,15 @@ func _run_tests() -> void:
 	assert(source.get_amount(&"wood") == 41)
 	assert(source.transfer_to(source, &"wood", 10) == 0)
 
+	var slot_source := _create_inventory(catalog, 2)
+	var slot_target := _create_inventory(catalog, 2)
+	assert(slot_source.add_item(&"wood", 100) == 0)
+	assert(slot_source.transfer_slot_to(slot_target, 1, 1) == 1)
+	var slot_source_snapshot := slot_source.get_slots_snapshot()
+	assert(slot_source_snapshot[0].amount == 99)
+	assert(slot_source_snapshot[1].is_empty())
+	assert(slot_target.get_amount(&"wood") == 1)
+
 	print("INVENTORY_SMOKE_TEST_OK")
 	quit()
 

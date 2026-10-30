@@ -19,10 +19,16 @@ const INVALID_PREVIEW_COLOR := Color(0.9, 0.15, 0.1, 1.0)
 @export var build_grid: Node
 @export var construction_site_scene: PackedScene
 @export var selected_recipe: BuildRecipe
-# Fundament, Boden und Wand besitzen eigene BuildRecipe-Ressourcen und sind in
-# der Hauptszene gemeinsam im verfügbaren Baukatalog eingetragen.
 # Alle im Baumenü sichtbaren Rezepte werden im Inspector eingetragen. Das
 # aktuell gewählte Rezept bleibt separat, weil es sich während des Spiels ändert.
+## Die Holzkiste ist als drehbares Object-Rezept mit einer Rasterzelle im
+## Baukatalog eingetragen. Ihr Bau benötigt fünf Holz, einen Hammer und vier
+## Arbeitsschritte; die fertige Szene besitzt anschließend ihr eigenes Inventar.
+##
+## Der vollständige Bauablauf wurde im Spiel geprüft: Object-Belegung verhindert
+## zwei Kisten auf derselben Zelle, erlaubt aber Boden und Kiste gemeinsam. Jede
+## fertig gebaute Kiste besitzt unabhängige Bestände und verwendet das gemeinsame
+## Lagerfenster mit Zugriffsreichweite und slotgenauen Transfers.
 @export var available_recipes: Array[BuildRecipe] = []
 
 @onready var placement_preview: MeshInstance3D = $PlacementPreview

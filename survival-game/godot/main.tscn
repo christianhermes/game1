@@ -25,7 +25,9 @@
 [ext_resource type="Resource" uid="uid://bvvccljviuu2o" path="res://data/buildings/wood_foundation.tres" id="23_1u8w0"]
 [ext_resource type="Resource" uid="uid://mve2r6uvbp4m" path="res://data/buildings/wood_floor.tres" id="24_0odxb"]
 [ext_resource type="Resource" uid="uid://bfju1jx72wn8n" path="res://data/buildings/wood_door.tres" id="25_0odxb"]
-[ext_resource type="Resource" path="res://data/items/item_catalog.tres" id="26_item_catalog"]
+[ext_resource type="Resource" uid="uid://c8d31ifj1bk4" path="res://data/items/item_catalog.tres" id="26_item_catalog"]
+[ext_resource type="Resource" uid="uid://bh4i50sg2y5im" path="res://data/buildings/wood_chest.tres" id="28_qsp4k"]
+[ext_resource type="PackedScene" path="res://scenes/ui/storage_menu.tscn" id="28_storage_menu"]
 
 [sub_resource type="Environment" id="WorldEnvironment"]
 background_mode = 1
@@ -107,7 +109,6 @@ shape = SubResource("InteractionShape")
 [node name="Inventory" type="Node" parent="Player" unique_id=921649693]
 script = ExtResource("3_lquwl")
 item_catalog = ExtResource("26_item_catalog")
-slot_capacity = 20
 metadata/_custom_type_script = "uid://cr5v0sbds6mjx"
 
 [node name="PlayerStats" type="Node" parent="Player" unique_id=681528531]
@@ -130,6 +131,8 @@ crop_data = ExtResource("4_wheat")
 [node name="UI" type="CanvasLayer" parent="." unique_id=1218987793]
 
 [node name="WorkstationMenu" parent="UI" unique_id=1021962193 instance=ExtResource("17_station_menu")]
+
+[node name="StorageMenu" parent="UI" unique_id=1261891649 instance=ExtResource("28_storage_menu")]
 
 [node name="WorldInfoPanel" parent="UI" unique_id=2109472084 instance=ExtResource("19_world_info")]
 
@@ -269,7 +272,7 @@ camera = NodePath("../Camera3D")
 build_grid = NodePath("../BuildGrid")
 construction_site_scene = ExtResource("13_w48qg")
 selected_recipe = ExtResource("14_vivmo")
-available_recipes = Array[ExtResource("22_ryguw")]([ExtResource("14_vivmo"), ExtResource("23_1u8w0"), ExtResource("24_0odxb"), ExtResource("25_0odxb")])
+available_recipes = Array[ExtResource("22_ryguw")]([ExtResource("14_vivmo"), ExtResource("23_1u8w0"), ExtResource("24_0odxb"), ExtResource("25_0odxb"), ExtResource("28_qsp4k")])
 
 [node name="PlacementPreview" type="MeshInstance3D" parent="BuildManager" unique_id=131452616]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)

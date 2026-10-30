@@ -3,17 +3,35 @@ extends FinishedBuilding
 
 ## Physischer Lagerbehälter mit einem eigenen Inventory-Kind. Jede Instanz der
 ## späteren Kistenszene besitzt dadurch wirklich unabhängige Bestände.
+@export_range(0.5, 10.0, 0.1) var access_distance := 2.5
 @onready var inventory := get_node_or_null("Inventory") as Inventory
 
 
-## TODO 59.1: Gib das Kisteninventar zurück. Die null-Prüfung bleibt Aufgabe des
-## aufrufenden Menüs, damit eine fehlerhafte Szene keine Gegenstände verschluckt.
+## Gibt das eigene Kisteninventar an Lagerfenster und andere Systeme weiter.
 func get_storage_inventory() -> Inventory:
-	return null
+	return inventory
 
 
-## TODO 59.2: Ergänze die normale Gebäudeinformation um belegte Slots,
-## Gesamtkapazität und Gesamtmenge. Verwende dafür nur öffentliche Methoden des
-## Inventory und greife nicht direkt auf dessen internes Slot-Array zu.
+## Erlaubt manuellen Zugriff nur, wenn der Bewohner horizontal nah genug an
+## der Kiste steht. Höhenunterschiede durch Bodenplatten zählen dabei nicht.
+func can_be_accessed_by(actor: Node3D) -> bool:
+	if actor == null:
+		return false
+
+	var offset := actor.global_position - global_position
+	offset.y = 0.0
+	return offset.length() <= access_distance
+
+
+## Ergänzt die Gebäudeinformation um die wichtigsten Lagerwerte.
 func get_world_info_text() -> String:
-	return super.get_world_info_text()
+	var building_info := super.get_world_info_text()
+	if inventory == null:
+		return building_info
+
+	return "%s\nLagerplätze: %d/%d\nGegenstände: %d" % [
+		building_info,
+		inventory.get_used_slot_count(),
+		inventory.slot_capacity,
+		inventory.get_total_item_count(),
+	]
