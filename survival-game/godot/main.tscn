@@ -28,6 +28,7 @@
 [ext_resource type="Resource" uid="uid://c8d31ifj1bk4" path="res://data/items/item_catalog.tres" id="26_item_catalog"]
 [ext_resource type="Resource" uid="uid://bh4i50sg2y5im" path="res://data/buildings/wood_chest.tres" id="28_qsp4k"]
 [ext_resource type="PackedScene" path="res://scenes/ui/storage_menu.tscn" id="28_storage_menu"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/basic_enemy.tscn" id="29_basic_enemy"]
 
 [sub_resource type="Environment" id="WorldEnvironment"]
 background_mode = 1
@@ -44,12 +45,29 @@ roughness = 0.9
 material = SubResource("GroundMaterial")
 size = Vector3(40, 0.2, 40)
 
+[sub_resource type="StandardMaterial3D" id="PlayerMaterial"]
+albedo_color = Color(0.36, 0.55, 0.86, 1)
+
 [sub_resource type="CapsuleMesh" id="PlayerMesh"]
+material = SubResource("PlayerMaterial")
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 
 [sub_resource type="SphereShape3D" id="InteractionShape"]
 radius = 2.2
+
+[sub_resource type="SphereShape3D" id="AttackShape"]
+radius = 1.8
+
+[sub_resource type="StandardMaterial3D" id="AttackEffectMaterial"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.72, 0.12, 0.7)
+
+[sub_resource type="TorusMesh" id="AttackEffectMesh"]
+material = SubResource("AttackEffectMaterial")
+inner_radius = 1.4
+outer_radius = 1.8
 
 [sub_resource type="TorusMesh" id="TorusMesh_lfxu0"]
 
@@ -90,7 +108,7 @@ size = 27.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 mesh = SubResource("GroundMesh")
 
-[node name="Player" type="CharacterBody3D" parent="." unique_id=1403501398 groups=["selectable"]]
+[node name="Player" type="CharacterBody3D" parent="." unique_id=1403501398 groups=["player", "selectable"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1)
 script = ExtResource("2_player")
 
@@ -105,6 +123,17 @@ collision_layer = 0
 
 [node name="InteractionShape" type="CollisionShape3D" parent="Player/InteractionArea" unique_id=1378207457]
 shape = SubResource("InteractionShape")
+
+[node name="AttackArea" type="Area3D" parent="Player" unique_id=1158203684]
+collision_layer = 0
+
+[node name="AttackShape" type="CollisionShape3D" parent="Player/AttackArea" unique_id=748660201]
+shape = SubResource("AttackShape")
+
+[node name="AttackEffect" type="MeshInstance3D" parent="Player" unique_id=1920962699]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.8, 0)
+visible = false
+mesh = SubResource("AttackEffectMesh")
 
 [node name="Inventory" type="Node" parent="Player" unique_id=921649693]
 script = ExtResource("3_lquwl")
@@ -256,6 +285,9 @@ available_recipes = Array[ExtResource("13_074og")]([])
 [node name="Oven" parent="." unique_id=1605596297 instance=ExtResource("12_dg77c")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, -10)
 available_recipes = Array[ExtResource("13_074og")]([])
+
+[node name="BasicEnemy" parent="." unique_id=1489873208 instance=ExtResource("29_basic_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1, -8)
 
 [node name="ConstructionSite" parent="." unique_id=290744299 instance=ExtResource("13_w48qg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)

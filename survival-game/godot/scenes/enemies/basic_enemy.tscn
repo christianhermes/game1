@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/basic_enemy.gd" id="1_enemy"]
+[ext_resource type="PackedScene" uid="uid://bt625i64upabl" path="res://scenes/items/item_pickup.tscn" id="2_loot"]
+
+[sub_resource type="StandardMaterial3D" id="EnemyMaterial"]
+albedo_color = Color(0.65, 0.12, 0.18, 1)
+
+[sub_resource type="CapsuleMesh" id="EnemyMesh"]
+material = SubResource("EnemyMaterial")
+radius = 0.55
+height = 1.8
+
+[sub_resource type="CapsuleShape3D" id="EnemyShape"]
+radius = 0.55
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="HealthBarBackgroundMaterial"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.55, 0.06, 0.06, 0.95)
+billboard_mode = 1
+no_depth_test = true
+
+[sub_resource type="QuadMesh" id="HealthBarBackgroundMesh"]
+material = SubResource("HealthBarBackgroundMaterial")
+size = Vector2(1.3, 0.16)
+
+[sub_resource type="StandardMaterial3D" id="HealthBarFillMaterial"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.18, 0.9, 0.24, 1)
+billboard_mode = 1
+no_depth_test = true
+render_priority = 1
+
+[sub_resource type="QuadMesh" id="HealthBarFillMesh"]
+material = SubResource("HealthBarFillMaterial")
+size = Vector2(1.2, 0.1)
+
+[node name="BasicEnemy" type="CharacterBody3D" groups=["enemies"]]
+script = ExtResource("1_enemy")
+loot_scene = ExtResource("2_loot")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("EnemyMesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("EnemyShape")
+
+[node name="HealthBar" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+visible = false
+
+[node name="Background" type="MeshInstance3D" parent="HealthBar"]
+mesh = SubResource("HealthBarBackgroundMesh")
+
+[node name="Fill" type="MeshInstance3D" parent="HealthBar"]
+mesh = SubResource("HealthBarFillMesh")

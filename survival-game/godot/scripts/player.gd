@@ -6,6 +6,12 @@ extends CharacterBody3D
 # Bewegungsgeschwindigkeit des Spielers in Metern pro Sekunde.
 const SPEED := 6.0
 
+## Der Nahkampfangriff verwendet die Eingabeaktion attack und eine eigene
+## AttackArea mit 1,8 Metern Radius. Schaden und Cooldown bleiben exportiert,
+## damit sich das erste Kampfgefühl ohne Codeänderung abstimmen lässt.
+@export_range(1.0, 100.0, 1.0) var attack_damage := 25.0
+@export_range(0.1, 5.0, 0.1) var attack_cooldown := 0.6
+
 # Diese ID verbindet den sichtbaren CharacterBody3D mit seinen persistenten
 # Aufträgen im SettlementJobManager.
 @export var worker_id: StringName = &"player"
@@ -28,12 +34,20 @@ var current_job_id := -1
 var selected_item_id: StringName = &""
 
 var spawn_position := Vector3.ZERO
+var attack_cooldown_remaining := 0.0
+var attack_effect_tween: Tween
+var hurt_feedback_tween: Tween
+var player_material: StandardMaterial3D
+var player_base_color := Color(0.36, 0.55, 0.86, 1.0)
 
 # Zeigt an, ob der Bewohner aktuell einem Laufauftrag folgt.
 var has_move_target := false
 
 # Reichweite für Interaktionen und das Inventar des Spielers.
 @onready var interaction_area: Area3D = $InteractionArea
+@onready var attack_area: Area3D = $AttackArea
+@onready var attack_effect: MeshInstance3D = $AttackEffect
+@onready var body_mesh: MeshInstance3D = $MeshInstance3D
 @onready var inventory: Inventory = $Inventory
 @onready var stats: PlayerStats = $PlayerStats
 @onready var selection_marker: MeshInstance3D = $SelectionMarker
@@ -42,6 +56,11 @@ var has_move_target := false
 func _ready() -> void:
 	spawn_position = global_position
 	stats.died.connect(_on_died)
+	var source_material := body_mesh.get_active_material(0) as StandardMaterial3D
+	if source_material != null:
+		player_material = source_material.duplicate() as StandardMaterial3D
+		body_mesh.material_override = player_material
+		player_base_color = player_material.albedo_color
 
 # Einheitlicher Eingang für alle Gegenstände. Die Restmenge bleibt beim
 # Aufrufer, wenn das Inventar nicht genug Platz besitzt.
@@ -119,8 +138,14 @@ func cancel_move_target() -> void:
 
 
 # _physics_process() läuft in einem festen Takt und ist für Bewegung gedacht.
-func _physics_process(_delta: float) -> void:
+# Der Angriff ist nur während der direkten Charaktersteuerung verfügbar. Sein
+# Cooldown läuft unabhängig von Bewegung und frühen Rückgaben einmal pro Takt.
+func _physics_process(delta: float) -> void:
 	var direct_input_available := can_move and direct_control_enabled
+	attack_cooldown_remaining = maxf(
+		attack_cooldown_remaining - delta,
+		0.0,
+	)
 
 	# "interact" ist eine Aktion aus den Eingabe-Einstellungen des Projekts.
 	if direct_input_available and Input.is_action_just_pressed("interact"):
@@ -128,7 +153,7 @@ func _physics_process(_delta: float) -> void:
 
 	if direct_input_available and Input.is_action_just_pressed("use_selected_item"):
 		_try_consume_selected_item()
-	
+
 	# Bei gesperrter Bewegung wird vorhandene Geschwindigkeit sofort beendet.
 	if not direct_input_available:
 		velocity = Vector3.ZERO
@@ -164,6 +189,82 @@ func _physics_process(_delta: float) -> void:
 
 	# CharacterBody3D bewegt sich und berücksichtigt dabei Kollisionen.
 	move_and_slide()
+
+	if direct_input_available and Input.is_action_just_pressed("attack"):
+		_try_attack()
+
+
+## Führt nach Ablauf des Cooldowns immer einen sichtbaren Angriff aus. Dadurch
+## erhält auch ein Fehlschlag eine klare Rückmeldung und verbraucht den normalen
+## Angriffs-Cooldown. Getroffen wird höchstens der nächstgelegene gültige Gegner.
+func _try_attack() -> void:
+	if attack_cooldown_remaining > 0.0:
+		return
+	attack_cooldown_remaining = attack_cooldown
+	_play_attack_effect()
+
+	var closest_enemy: Node3D = null
+	var closest_distance_squared := INF
+	for body in attack_area.get_overlapping_bodies():
+		if not body.is_in_group("enemies") or not body.has_method("take_damage"):
+			continue
+
+		var enemy := body as Node3D
+		if enemy == null:
+			continue
+
+		var distance_squared := global_position.distance_squared_to(enemy.global_position)
+		if distance_squared < closest_distance_squared:
+			closest_enemy = enemy
+			closest_distance_squared = distance_squared
+
+	if closest_enemy == null:
+		return
+
+	closest_enemy.call("take_damage", attack_damage, self)
+
+
+func _play_attack_effect() -> void:
+	if attack_effect_tween != null:
+		attack_effect_tween.kill()
+	attack_effect.scale = Vector3.ONE * 0.25
+	attack_effect.visible = true
+	attack_effect_tween = create_tween()
+	attack_effect_tween.tween_property(
+		attack_effect,
+		"scale",
+		Vector3.ONE,
+		0.16,
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	attack_effect_tween.tween_callback(func() -> void:
+		attack_effect.visible = false
+	)
+
+
+## Leitet gültigen Schaden an die bereits zentrale PlayerStats-Lebenslogik
+## weiter. Der optionale Angreifer kann später für Aggro oder Todesursachen
+## ausgewertet werden. Bereits verlorenes Leben erzeugt kein weiteres visuelles
+## Trefferfeedback während der Respawn-Wartezeit.
+func take_damage(amount: float, _attacker: Node3D = null) -> void:
+	if amount <= 0.0 or stats.health <= 0.0:
+		return
+	stats.take_damage(amount)
+	_play_hurt_feedback()
+
+
+func _play_hurt_feedback() -> void:
+	if player_material == null:
+		return
+	if hurt_feedback_tween != null:
+		hurt_feedback_tween.kill()
+	player_material.albedo_color = Color(1.0, 0.12, 0.08, 1.0)
+	hurt_feedback_tween = create_tween()
+	hurt_feedback_tween.tween_property(
+		player_material,
+		"albedo_color",
+		player_base_color,
+		0.18,
+	)
 
 
 func _update_autonomous_movement() -> void:
