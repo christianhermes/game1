@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="ItemCatalog" load_steps=11 format=3]
+
+[ext_resource type="Script" uid="uid://cmolgeydr02sw" path="res://scripts/inventory/item_catalog.gd" id="1_catalog"]
+[ext_resource type="Script" uid="uid://cojyqxak6uyrw" path="res://scripts/inventory/item_definition.gd" id="2_definition"]
+
+[sub_resource type="Resource" id="Item_wood"]
+script = ExtResource("2_definition")
+id = &"wood"
+display_name = "Holz"
+metadata/_custom_type_script = "uid://cojyqxak6uyrw"
+
+[sub_resource type="Resource" id="Item_stone"]
+script = ExtResource("2_definition")
+id = &"stone"
+display_name = "Stein"
+metadata/_custom_type_script = "uid://cojyqxak6uyrw"
+
+[sub_resource type="Resource" id="Item_wheat_seed"]
+script = ExtResource("2_definition")
+id = &"wheat_seed"
+display_name = "Weizenkorn"
+metadata/_custom_type_script = "uid://cojyqxak6uyrw"
+
+[sub_resource type="Resource" id="Item_hammer"]
+script = ExtResource("2_definition")
+id = &"hammer"
+display_name = "Hammer"
+item_type = 2
+max_stack_size = 1
+metadata/_custom_type_script = "uid://cojyqxak6uyrw"
+
+[sub_resource type="Resource" id="Item_wheat"]
+script = ExtResource("2_definition")
+id = &"wheat"
+display_name = "Weizen"
+item_type = 1
+metadata/_custom_type_script = "uid://cojyqxak6uyrw"
+
+[sub_resource type="Resource" id="Item_straw"]
+script = ExtResource("2_definition")
+id = &"straw"
+display_name = "Stroh"
+metadata/_custom_type_script = "uid://cojyqxak6uyrw"
+
+[sub_resource type="Resource" id="Item_flour"]
+script = ExtResource("2_definition")
+id = &"flour"
+display_name = "Mehl"
+metadata/_custom_type_script = "uid://cojyqxak6uyrw"
+
+[sub_resource type="Resource" id="Item_bread"]
+script = ExtResource("2_definition")
+id = &"bread"
+display_name = "Brot"
+item_type = 1
+metadata/_custom_type_script = "uid://cojyqxak6uyrw"
+
+[resource]
+script = ExtResource("1_catalog")
+definitions = Array[ExtResource("2_definition")]([SubResource("Item_wood"), SubResource("Item_stone"), SubResource("Item_wheat_seed"), SubResource("Item_hammer"), SubResource("Item_wheat"), SubResource("Item_straw"), SubResource("Item_flour"), SubResource("Item_bread")])
+metadata/_custom_type_script = "uid://cmolgeydr02sw"

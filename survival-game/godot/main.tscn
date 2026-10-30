@@ -25,6 +25,7 @@
 [ext_resource type="Resource" uid="uid://bvvccljviuu2o" path="res://data/buildings/wood_foundation.tres" id="23_1u8w0"]
 [ext_resource type="Resource" uid="uid://mve2r6uvbp4m" path="res://data/buildings/wood_floor.tres" id="24_0odxb"]
 [ext_resource type="Resource" uid="uid://bfju1jx72wn8n" path="res://data/buildings/wood_door.tres" id="25_0odxb"]
+[ext_resource type="Resource" path="res://data/items/item_catalog.tres" id="26_item_catalog"]
 
 [sub_resource type="Environment" id="WorldEnvironment"]
 background_mode = 1
@@ -105,6 +106,8 @@ shape = SubResource("InteractionShape")
 
 [node name="Inventory" type="Node" parent="Player" unique_id=921649693]
 script = ExtResource("3_lquwl")
+item_catalog = ExtResource("26_item_catalog")
+slot_capacity = 20
 metadata/_custom_type_script = "uid://cr5v0sbds6mjx"
 
 [node name="PlayerStats" type="Node" parent="Player" unique_id=681528531]

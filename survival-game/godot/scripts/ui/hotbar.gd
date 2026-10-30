@@ -68,11 +68,12 @@ func _ready() -> void:
 		# bind(i) merkt sich für jeden Button seinen eigenen Index.
 		current_slot.pressed.connect(select_slots.bind(i))
 
-	select_slots(selected_index)
-
 	# Das Inventar kann im Editor fehlen; deshalb wird es vorher geprüft.
 	if inventory != null:
-		inventory.inventory_changed.connect(_on_inventory_changed)
+		inventory.contents_changed.connect(_refresh_from_inventory)
+		_refresh_from_inventory()
+	else:
+		select_slots(selected_index)
 
 
 # Aktiviert genau einen Slot und meldet dessen Gegenstands-ID an den Player.
@@ -87,44 +88,32 @@ func select_slots(index: int) -> void:
 	selected_item_changed.emit(id)
 
 
-# Reagiert auf jede Mengenänderung im Inventar.
-func _on_inventory_changed(item_id: StringName, new_amount: int) -> void:
-	# TODO 56.5: Dieses Signal soll auch nach der Slot-Umstellung weiterhin die
-	# Gesamtmenge einer Item-ID liefern. Dadurch bleibt die Hotbar Schnellzugriff
-	# und muss keine internen Inventarslots kennen.
-	# Zuerst wird geprüft, ob der Gegenstand bereits einen Slot besitzt.
-	var item_index: int = slot_item_ids.find(item_id)
-
-	# Bei Menge 0 wird der bisher belegte Slot wieder freigegeben.
-	if new_amount <= 0:
-		if item_index == -1:
-			return
-
-		slot_item_ids[item_index] = &""
-		slots[item_index].text = ""
-
-		# Wenn der geleerte Slot ausgewählt war, muss der Player ebenfalls die
-		# neue leere Gegenstands-ID erhalten.
-		if selected_index == item_index:
-			select_slots(item_index)
+# Spiegelt die ersten Hotbar-Plätze direkt auf die physischen Inventarslots.
+# Zwei Stapel derselben Itemart bleiben dadurch als zwei Einträge sichtbar.
+func _refresh_from_inventory() -> void:
+	if inventory == null:
 		return
 
-	# -1 bedeutet: Der Gegenstand ist noch keinem Slot zugeordnet.
-	if item_index == -1:
-		item_index = slot_item_ids.find(&"")
+	var inventory_slots := inventory.get_slots_snapshot()
+	for index in range(slots.size()):
+		if index >= inventory_slots.size():
+			slot_item_ids[index] = &""
+			slots[index].text = ""
+			continue
 
-		# Auch die Suche nach einem freien Slot liefert -1, wenn keiner frei ist.
-		if item_index == -1:
-			print("Kein Platz in der Hotbar")
-			return
+		var stack := inventory_slots[index]
+		if stack == null or stack.is_empty():
+			slot_item_ids[index] = &""
+			slots[index].text = ""
+			continue
 
-		# Der gefundene freie Slot gehört ab jetzt zu diesem Gegenstand.
-		slot_item_ids[item_index] = item_id
+		slot_item_ids[index] = stack.item_id
+		var display_name := String(stack.item_id).capitalize()
+		if inventory.item_catalog != null:
+			var definition := inventory.item_catalog.get_definition(stack.item_id)
+			if definition != null:
+				display_name = definition.display_name
+		slots[index].text = display_name + "\n" + str(stack.amount) + "x"
 
-	# Neue und bereits vorhandene Items verwenden dieselbe Textdarstellung.
-	var display_name := String(item_id).capitalize()
-	slots[item_index].text = display_name + "\n" + str(new_amount) + "x"
-
-	# Ist dieser Slot aktiv, wird seine ID erneut an den Player gemeldet.
-	if item_index == selected_index:
-		select_slots(item_index)
+	# Mengenänderungen können den ausgewählten Slot leeren oder neu belegen.
+	select_slots(selected_index)

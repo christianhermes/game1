@@ -43,13 +43,20 @@ func _ready() -> void:
 	spawn_position = global_position
 	stats.died.connect(_on_died)
 
-# TODO 57.1: Nach der Slot-Umstellung gibt receive_item() die nicht eingelagerte
-# Restmenge von Inventory.add_item() zurück. Ergänze außerdem can_receive_item(),
-# damit Ernte und Produktion ihren vollständigen Output vorab prüfen können.
-# Bis Aufgabe 57 bleibt diese bestehende void-Version unverändert funktionsfähig.
-# Einheitlicher Eingang für alle Gegenstände, die der Spieler erhält.
-func receive_item(item_id: StringName, amount: int) -> void:
-	inventory.add_item(item_id, amount)
+# Einheitlicher Eingang für alle Gegenstände. Die Restmenge bleibt beim
+# Aufrufer, wenn das Inventar nicht genug Platz besitzt.
+func receive_item(item_id: StringName, amount: int) -> int:
+	return inventory.add_item(item_id, amount)
+
+
+## Prüft einen einzelnen Output vor einer unteilbaren Aktion wie einer Ernte.
+func can_receive_item(item_id: StringName, amount: int) -> bool:
+	return inventory.can_add_item(item_id, amount)
+
+
+## Prüft mehrere Outputs gemeinsam, damit sie nicht denselben freien Slot planen.
+func can_receive_items(item_amounts: Array[ItemAmount]) -> bool:
+	return inventory.can_add_items(item_amounts)
 
 
 func set_direct_control_enabled(enabled: bool) -> void:

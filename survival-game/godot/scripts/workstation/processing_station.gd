@@ -103,9 +103,6 @@ func move_queued_order(order_id: int, direction: int) -> bool:
 
 
 func _use_station(actor: Node3D) -> void:
-	# TODO 57.4: Prüfe vor dem Verbrauch der Zutaten, ob sämtliche Outputs in das
-	# Zielinventar passen. Ein voller Output darf niemals Zutaten vernichten. Die
-	# drei alten Spezialstationen werden im selben Arbeitsschritt mit abgesichert.
 	if recipe == null:
 		push_warning(display_name + " besitzt kein Rezept.")
 		return
@@ -118,6 +115,10 @@ func _use_station(actor: Node3D) -> void:
 		return
 
 	if not actor.has_method("receive_item"):
+		return
+	if not actor.has_method("can_receive_items"):
+		return
+	if not actor.call("can_receive_items", recipe.outputs):
 		return
 
 	var ingredient_used: bool = actor.call(
@@ -132,8 +133,10 @@ func _use_station(actor: Node3D) -> void:
 	for output in recipe.outputs:
 		if output == null:
 			continue
-		actor.call(
+		var remaining_amount: int = actor.call(
 			"receive_item",
 			output.item_id,
 			output.amount,
 		)
+		if remaining_amount > 0:
+			push_error("Vorab geprüfter Produktionsoutput konnte nicht eingelagert werden.")

@@ -94,9 +94,15 @@ func _on_growth_finished() -> void:
 
 # Übergibt die Ernte an den Actor und setzt das Feld danach zurück.
 func _harvest(actor: Node3D) -> void:
-	# TODO 57.3: Prüfe vor der Übergabe mit can_receive_item(), ob die gesamte
-	# Ernte hineinpasst. Bleibt Rest übrig, darf das Feld nicht auf EMPTY gesetzt
-	# werden, weil wiederholtes Ernten sonst bereits angenommene Mengen dupliziert.
+	if crop_data == null:
+		return
+	if not actor.has_method("can_receive_item") or not actor.has_method("receive_item"):
+		status_message = "Ernte kann nicht aufgenommen werden"
+		return
+	if not actor.call("can_receive_item", crop_data.id, crop_data.harvest_amount):
+		status_message = "Inventar voll"
+		return
+
 	print(
 		actor.name,
 		" erntet ",
@@ -105,8 +111,14 @@ func _harvest(actor: Node3D) -> void:
 		crop_data.display_name,
 	)
 
-	if actor.has_method("receive_item"):
-		actor.receive_item(crop_data.id, crop_data.harvest_amount)
+	var remaining_amount: int = actor.call(
+		"receive_item",
+		crop_data.id,
+		crop_data.harvest_amount,
+	)
+	if remaining_amount > 0:
+		status_message = "Ernte konnte nicht vollständig aufgenommen werden"
+		return
 
 	state = PlotState.EMPTY
 	status_message = ""

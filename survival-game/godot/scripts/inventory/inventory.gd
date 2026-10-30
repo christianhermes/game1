@@ -8,134 +8,223 @@ extends Node
 # Ein Signal informiert interessierte Nodes darüber, dass sich eine Menge
 # geändert hat. Die Hotbar verbindet sich mit diesem Signal.
 signal inventory_changed(item_id: StringName, new_amount: int)
-
-## TODO 56.1: Bereite das slotbasierte Inventar parallel zum bisherigen
-## Dictionary vor, ohne die funktionierenden Systeme bereits umzustellen.
-##
-## Ergänze hier:
-## - das Signal contents_changed ohne Parameter,
-## - eine exportierte Referenz auf einen ItemCatalog,
-## - eine exportierte slot_capacity mit dem Standardwert 20,
-## - ein Array[InventoryStack] namens slots.
-##
-## Schreibe danach _ready():
-## 1. Prüfe, dass der Katalog existiert und gültig ist.
-## 2. Prüfe, dass slot_capacity größer als 0 ist.
-## 3. Erzeuge genau slot_capacity neue InventoryStack-Instanzen.
-## 4. Erzeuge jede Instanz einzeln mit InventoryStack.new(). Dieselbe Resource
-##    darf niemals mehrfach im Array liegen, weil sich sonst mehrere Slots
-##    gleichzeitig verändern würden.
-##
-## Lass items und die bestehenden Methoden zunächst unverändert. So bleiben
-## Hotbar, Bauen, Farming und Werkstationen während dieses Schritts lauffähig.
-
-# Das Dictionary ordnet jeder Gegenstands-ID ihre aktuelle Menge zu.
-# Beispiel: { &"wheat_seed": 3, &"wheat": 1 }
-var items: Dictionary = {}
+signal contents_changed()
+@export var item_catalog: ItemCatalog
+@export var slot_capacity: int = 20
+var slots: Array[InventoryStack] = []
 
 
-## TODO 56.4: Stelle add_item erst um, nachdem 56.1 bis 56.3 geprüft wurden.
-## Die Funktion soll dann int statt void zurückgeben. Der Rückgabewert ist die
-## Menge, die wegen eines vollen Inventars NICHT eingelagert werden konnte.
-##
-## Reihenfolge:
-## 1. Ungültige ID, unbekannte Definition oder amount <= 0 nicht einlagern.
-## 2. Zuerst passende, noch nicht volle Stapel auffüllen.
-## 3. Danach leere Slots einzeln mit neuen Stapeln belegen.
-## 4. Die effektive Stapelgrenze der ItemDefinition niemals überschreiten.
-## 5. Nur nach einer wirklichen Änderung contents_changed und inventory_changed
-##    mit der neuen Gesamtmenge senden.
-## 6. Die nicht eingelagerte Restmenge zurückgeben. 0 bedeutet voller Erfolg.
-# Fügt die angegebene Menge eines Gegenstands hinzu.
-func add_item(item_id: StringName, amount: int) -> void:
-	var new_amount: int = get_amount(item_id) + amount
-	items[item_id] = new_amount
-	print("Du hast ", new_amount, "x ", item_id)
+## Erzeugt für jeden Inventarplatz eine unabhängige Stapel-Resource.
+func _ready() -> void:
+	if not item_catalog or not item_catalog.is_valid():
+		return
+	if slot_capacity <= 0:
+		return
+	for _index in range(slot_capacity):
+		var stack = InventoryStack.new()
+		slots.append(stack)
 
-	# Erst nach der Änderung wird die neue Gesamtmenge gemeldet.
-	inventory_changed.emit(item_id, new_amount)
 
-## TODO 56.2: Stelle diese Abfragen auf slots um.
-##
-## get_amount(): Addiere amount aller nicht leeren Stapel mit passender item_id.
-## get_used_slot_count(): Zähle alle Stapel, die nicht leer sind.
-## get_total_item_count(): Addiere die Mengen aller nicht leeren Stapel.
-## get_slots_snapshot(): Gib ein neues Array mit duplizierten Stapeln zurück.
-## Das UI darf weder das echte slots-Array noch dessen Resources verändern.
+## Lagert zuerst in passende Stapel und danach in freie Slots ein.
+## Der Rückgabewert ist die Menge, die keinen Platz mehr gefunden hat.
+func add_item(item_id: StringName, amount: int) -> int:
+	if amount <= 0 or item_catalog == null:
+		return amount
+
+	var definition := item_catalog.get_definition(item_id)
+	if definition == null:
+		return amount
+
+	var remaining_amount := _add_to_slots(slots, definition, amount)
+
+	# Interessierte Systeme werden nur bei einer tatsächlichen Änderung informiert.
+	if remaining_amount < amount:
+		var new_amount := get_amount(item_id)
+		print("Du hast ", new_amount, "x ", item_id)
+		contents_changed.emit()
+		inventory_changed.emit(item_id, new_amount)
+
+	return remaining_amount
+
+
+## Füllt ein frei wählbares Slot-Array, ohne Signale zu senden. Dadurch kann
+## dieselbe Stapellogik für echte Einlagerungen und sichere Vorschauen dienen.
+func _add_to_slots(
+	target_slots: Array[InventoryStack],
+	definition: ItemDefinition,
+	amount: int,
+) -> int:
+	var remaining_amount := amount
+	var transfer_amount := 0
+
+	# Bereits vorhandene Stapel werden zuerst aufgefüllt.
+	for stack in target_slots:
+		if remaining_amount == 0:
+			break
+		if stack == null or stack.is_empty():
+			continue
+
+		transfer_amount = mini(stack.get_free_space(definition), remaining_amount)
+		if transfer_amount <= 0:
+			continue
+
+		stack.amount += transfer_amount
+		remaining_amount -= transfer_amount
+
+	# Die verbleibende Menge wird auf neue Stapel in leeren Slots verteilt.
+	var max_stack_size := definition.get_effective_max_stack_size()
+	for stack in target_slots:
+		if remaining_amount == 0:
+			break
+		if stack == null or not stack.is_empty():
+			continue
+
+		transfer_amount = mini(max_stack_size, remaining_amount)
+		stack.item_id = definition.id
+		stack.amount = transfer_amount
+		remaining_amount -= transfer_amount
+
+	return remaining_amount
+
 # Liefert die aktuelle Gesamtmenge einer Item-ID.
 func get_amount(item_id: StringName) -> int:
-	return items.get(item_id, 0)
+	var count := 0
+	for slot in slots:
+		if slot == null or slot.is_empty():
+			continue
+		if slot.item_id == item_id:
+			count += slot.amount
+	return count
 
 
+## Liefert die Anzahl der nicht leeren Inventarplätze.
 func get_used_slot_count() -> int:
-	return 0
+	var count := 0
+	for slot in slots:
+		if slot != null and not slot.is_empty():
+			count += 1
+	return count
 
 
+## Liefert die Anzahl aller Gegenstände über sämtliche Stapel hinweg.
 func get_total_item_count() -> int:
-	return 0
+	var count := 0
+	for slot in slots:
+		if slot != null and not slot.is_empty():
+			count += slot.amount
+	return count
 
 
+## Liefert unabhängige Stapelkopien, damit das UI das Inventar nicht verändert.
 func get_slots_snapshot() -> Array[InventoryStack]:
-	return []
+	var snapshot: Array[InventoryStack] = []
+	for slot in slots:
+		if slot == null:
+			snapshot.append(null)
+		else:
+			snapshot.append(slot.duplicate(true) as InventoryStack)
+	return snapshot
 
 
-## TODO 56.3: Berechne, ob und wie viel von einem Item noch hineinpasst.
-##
-## get_add_capacity():
-## 1. Hole die ItemDefinition aus dem Katalog. Ohne Definition ist das Ergebnis 0.
-## 2. Addiere den freien Platz aller bereits passenden Stapel.
-## 3. Addiere für jeden leeren Slot eine vollständige effektive Stapelgröße.
-##
-## can_add_item(): Liefere nur true, wenn amount positiv ist, die Definition
-## existiert und get_add_capacity(item_id) mindestens amount beträgt.
+## Berechnet den gesamten freien Platz für eine bestimmte Item-ID.
 func get_add_capacity(item_id: StringName) -> int:
-	return 0
+	if item_catalog == null:
+		return 0
+
+	var definition := item_catalog.get_definition(item_id)
+	if definition == null:
+		return 0
+
+	var capacity := 0
+	var max_stack_size := definition.get_effective_max_stack_size()
+	for stack in slots:
+		if stack == null:
+			continue
+		if stack.is_empty():
+			capacity += max_stack_size
+		else:
+			capacity += stack.get_free_space(definition)
+	return capacity
 
 
+## Prüft, ob eine positive Menge vollständig eingelagert werden kann.
 func can_add_item(item_id: StringName, amount: int) -> bool:
-	return false
+	if amount <= 0 or item_catalog == null:
+		return false
+	if item_catalog.get_definition(item_id) == null:
+		return false
+	return get_add_capacity(item_id) >= amount
 
 
-## TODO 56.6: Stelle remove_item erst nach add_item auf die Slots um.
-## 1. Lehne amount <= 0 ab.
-## 2. Prüfe vor jeder Änderung mit get_amount(), ob insgesamt genug vorhanden
-##    ist. Die Entnahme soll vollständig gelingen oder gar nichts verändern.
-## 3. Ziehe die Menge nacheinander von passenden Stapeln ab.
-## 4. Rufe clear() auf jedem dadurch geleerten Stapel auf.
-## 5. Sende beide Änderungssignale genau einmal und gib true zurück.
-# Versucht, eine Menge zu entfernen, und meldet Erfolg oder Misserfolg zurück.
-func remove_item(item_id: StringName, amount: int) -> bool:
-	# Null und negative Mengen sind keine gültige Entnahme.
-	if amount <= 0:
+## Prüft mehrere Outputs gemeinsam auf kopierten Slots. So können verschiedene
+## Itemarten nicht irrtümlich denselben letzten freien Slot reservieren.
+func can_add_items(item_amounts: Array[ItemAmount]) -> bool:
+	if item_catalog == null:
 		return false
 
-	var actual_amount: int = get_amount(item_id)
-	if actual_amount >= amount:
-		var new_amount: int = actual_amount - amount
+	var simulated_slots := get_slots_snapshot()
+	for item_amount in item_amounts:
+		if item_amount == null or item_amount.amount <= 0:
+			return false
 
-		# Gegenstände mit Menge 0 müssen nicht im Dictionary gespeichert bleiben.
-		if new_amount == 0:
-			items.erase(item_id)
-		else:
-			items[item_id] = new_amount
+		var definition := item_catalog.get_definition(item_amount.item_id)
+		if definition == null:
+			return false
+		if _add_to_slots(simulated_slots, definition, item_amount.amount) > 0:
+			return false
 
-		inventory_changed.emit(item_id, new_amount)
-		return true
-
-	# Es waren nicht genügend Gegenstände vorhanden.
-	return false
+	return true
 
 
-## TODO 56.7: Abschluss im Godot-Editor und Funktionstest.
-## - Weise beim Inventory-Kind des Players in main.tscn den gemeinsamen
-##   ItemCatalog zu und setze slot_capacity auf 20.
-## - Entferne das alte items-Dictionary erst, wenn alle Methoden mit slots laufen.
-## - Prüfe: 100 Wood ergibt Stapel mit 99 und 1.
-## - Prüfe: Zwei Hammer ergeben zwei Stapel mit jeweils 1.
-## - Prüfe: Entfernen über Stapelgrenzen liefert die richtige Gesamtmenge.
-## - Prüfe: Hotbar, Bauen, Pflanzen und Essen funktionieren weiterhin.
+## Entfernt eine Menge vollständig oder lässt das Inventar unverändert.
+func remove_item(item_id: StringName, amount: int) -> bool:
+	if amount <= 0 or get_amount(item_id) < amount:
+		return false
+
+	var remaining_amount := amount
+	for stack in slots:
+		if remaining_amount == 0:
+			break
+		if stack == null or stack.is_empty() or stack.item_id != item_id:
+			continue
+
+		var removed_amount := mini(stack.amount, remaining_amount)
+		stack.amount -= removed_amount
+		remaining_amount -= removed_amount
+		if stack.amount == 0:
+			stack.clear()
+
+	contents_changed.emit()
+	inventory_changed.emit(item_id, get_amount(item_id))
+	return true
 
 
-## TODO 58: Ergänze nach der Slot-Umstellung hier die verlustfreie Übertragung
-## zwischen zwei Inventaren. Die Funktion soll die tatsächlich bewegte Menge
-## zurückgeben und bei zu wenig Zielplatz niemals Gegenstände vernichten.
+## Verschiebt bis zur Wunschmenge in ein anderes Inventar und gibt die wirklich
+## eingelagerte Menge zurück. Unerwartete Zielreste werden sofort zurückgebucht.
+func transfer_to(
+	target: Inventory,
+	item_id: StringName,
+	requested_amount: int,
+) -> int:
+	if target == null or target == self:
+		return 0
+	if item_id.is_empty() or requested_amount <= 0:
+		return 0
+
+	var transfer_amount := mini(
+		requested_amount,
+		mini(get_amount(item_id), target.get_add_capacity(item_id)),
+	)
+	if transfer_amount <= 0:
+		return 0
+	if not remove_item(item_id, transfer_amount):
+		return 0
+
+	var target_remainder := target.add_item(item_id, transfer_amount)
+	var moved_amount := transfer_amount - target_remainder
+	if target_remainder > 0:
+		var source_remainder := add_item(item_id, target_remainder)
+		if source_remainder > 0:
+			push_error("Inventartransfer konnte einen Rest nicht zurückbuchen.")
+
+	return moved_amount

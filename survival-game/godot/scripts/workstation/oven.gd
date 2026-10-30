@@ -6,12 +6,12 @@ const REQUIRED_AMOUNT := 2
 const BREAD_OUTPUT := 1
 
 func _use_station(actor: Node3D) -> void:
-	# TODO 57.4: Vor dem Verbrauch des Mehls prüfen, ob das Brot vollständig in
-	# das Inventar passt. Bei Platzmangel weder Zutat noch Output verändern.
 	if not actor.has_method("try_use_selected_item"):
 		return
 
-	if not actor.has_method("receive_item"):
+	if not actor.has_method("receive_item") or not actor.has_method("can_receive_item"):
+		return
+	if not actor.call("can_receive_item", &"bread", BREAD_OUTPUT):
 		return
 
 	var flour_used: bool = actor.call(
@@ -23,4 +23,6 @@ func _use_station(actor: Node3D) -> void:
 	if not flour_used:
 		return
 
-	actor.call("receive_item", &"bread", BREAD_OUTPUT)
+	var remaining_amount: int = actor.call("receive_item", &"bread", BREAD_OUTPUT)
+	if remaining_amount > 0:
+		push_error("Vorab geprüftes Brot konnte nicht eingelagert werden.")
