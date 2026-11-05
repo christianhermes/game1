@@ -77,7 +77,17 @@ Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen t
 - Keine voreilige Implementierung von Lagerlogistik, Multi-NPC-KI oder Kampf als Voraussetzung für diesen ersten Schnitt.
 - Codeänderungen erfolgen nur auf ausdrücklichen Implementierungsauftrag; Tests werden nur als durchgeführt bezeichnet, wenn sie tatsächlich gelaufen sind.
 
-**Noch zu entscheiden:** Unterbrechungsregel beim Moduswechsel; genaue Prioritätsgewichtung, Arbeitsreservierungen und UI-Darstellung werden jeweils beim betreffenden Meilenstein spezifiziert.
+**Noch zu entscheiden:** Genaue Prioritätsgewichtung, Detailregeln für Materialreservierungen und UI-Darstellung werden jeweils beim betreffenden Meilenstein spezifiziert. Die Auftragsfreigabe beim Wechsel in den Direktmodus ist verbindlich beschlossen.
+
+
+### Beschlossen: Auftragsfreigabe beim Wechsel in den Direktmodus (2026-11-05)
+
+- Wechselt die Spielerfigur vom autonomen Basismodus in den Direktmodus, gibt sie ihren zugewiesenen beziehungsweise reservierten Arbeitsauftrag frei. Der noch offene Teil des Auftrags wird wieder im gemeinsamen Auftragsvorrat angeboten, damit ihn ein anderer geeigneter Bewohner übernehmen kann.
+- Der Wechsel stoppt die autonome Navigation und Arbeit der Spielerfigur; sie kann denselben Auftrag nicht gleichzeitig direkt und autonom ausführen.
+- Bereits geleistete Bauarbeit, abgelieferte Materialien und andere abgeschlossene Teilschritte bleiben bestehen. Der verbleibende Bedarf wird neu berechnet; keine doppelte Auszahlung, Entnahme oder Fertigstellung.
+- Die Reservierung des **Auftrags** wird aufgehoben. Reservierungen für **noch nicht gelieferte Materialien** müssen gesondert konsistent freigegeben werden. Im Inventar der Spielerfigur befindliche Gegenstände werden nicht automatisch für andere NPCs verfügbar.
+- Falls gerade kein geeigneter Bewohner frei ist, bleibt der Auftrag offen, statt zu verschwinden. Eine laufende unteilbare Aktion muss an einem sicheren Punkt unterbrochen werden.
+- Für Codex: Dies ersetzt die bislang offene Entscheidung „pausieren, freigeben oder neu einreihen“. Implementierung erst nach ausdrücklichem Auftrag und Prüfung der aktuellen Job-/Inventarlogik.
 
 ### Beschlossen: Bewohner, Rekrutierung und Arbeit
 - Der eigene Charakter ist **NPC Nr. 1**; anfangs erledigt er Arbeiten nacheinander. Zusätzliche Bewohner erlauben parallele Arbeit.
