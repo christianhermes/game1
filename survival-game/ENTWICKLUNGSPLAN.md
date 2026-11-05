@@ -43,6 +43,42 @@ Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen t
 - **Keine Doppelarbeit:** Eine direkt kontrollierte Figur bearbeitet nicht gleichzeitig einen autonomen Auftrag; andere Bewohner arbeiten weiter. Das genaue Pausieren/Freigeben eines laufenden Auftrags beim Moduswechsel wird mit der Auftragswarteschlange festgelegt.
 - **Technische Konsequenz:** Nächster sinnvoller Ausbau ist ein gemeinsamer Arbeitsvorrat mit autonomer Auftragswahl und einfachen Prioritäten. Einzelne manuelle Transportbefehle sind höchstens Debug-/Notfallwerkzeuge und nicht das Zielbild des Basismodus.
 
+
+### Konkretisierung der zwei Steuerungsmodi für Codex (2026-11-05)
+
+**Zielbild:** Der Basismodus ist ein autonomer Arbeitsplaner, kein Modus, in dem jede Ressource und jedes Lager einzeln per Rechtsklick verbunden werden muss. Der Direktmodus steuert denselben Bewohner unmittelbar. Beide Wege nutzen gemeinsame, zustandsverändernde Gameplay-Aktionen und dieselben physischen Bestände.
+
+**Vorgeschlagene technische Schnittstellen (keine bereits existierenden APIs):**
+- `WorkOrder` / gemeinsamer Auftragsvorrat: Typ, Ziel-ID, Priorität, benötigte Voraussetzungen, Status, optionale Reservierung und Blockadegrund. Vor einer neuen Klasse prüfen, wie `SettlementJobManager` sinnvoll erweitert werden kann.
+- `WorkerController` / Auftragswahl: wählt für freie Bewohner ausführbare Arbeit anhand Priorität, Erreichbarkeit und verfügbaren Mitteln. Der eigene Charakter nutzt im Basismodus dieselbe Logik wie spätere NPCs.
+- `Action` / gemeinsame Domänenoperationen: Ressourcen entnehmen, Gegenstände übertragen, Baufortschritt leisten und später Schaden verursachen. Direkte Interaktion und autonomer Auftrag dürfen dieselbe Operation nicht doppelt ausführen.
+- `JobExecution` / Ausführungsschritte: Navigation, gegebenenfalls Material beschaffen, Lieferung und eigentliche Arbeit. Das sind interne Schritte eines Auftrags, keine notwendigen Einzelklicks.
+- `ControlMode`: Umschalten zwischen autonom und direkt ohne Verdopplung der Figur, des Inventars oder des Weltzustands.
+
+**Beispielablauf A – Holz bergen:** Spieler markiert eine geeignete Ressource zum Bergen. Der Auftragsvorrat erhält offene Arbeit. Ein freier geeigneter Bewohner wählt sie, läuft zur Quelle und führt die echte Entnahme aus. Das Holz landet in seinem Inventar oder als physisches Pickup, abhängig von der konkret implementierten Ressourcenregel. Später wird es gemäß Lagerbedarf physisch eingelagert. Fehlende Wege oder Kapazität müssen als Blockade sichtbar werden.
+
+**Beispielablauf B – Haus bauen (Folgeschritt):** Spieler platziert eine Baustelle oder eine aus Einzelbaustellen bestehende Gebäudevorlage. Die Baustellen melden Material- und Arbeitsbedarf. Freie Bewohner suchen echte Bestände, reservieren benötigte Mengen, transportieren sie und leisten Bauarbeit. Ein Bewohner kann bei fehlendem Transporteur selbst Material holen. Baustellen dürfen keine Materialien aus einem globalen Pool beziehen.
+
+**Beispielablauf C – Moduswechsel:** Beim Wechsel von Basis zu Direkt wird nur die Steuerung derselben Figur geändert. Keine parallele autonome Bewegung oder Tätigkeit. Laufende Aufträge und Reservierungen müssen konsistent behandelt werden; *ob pausiert, freigegeben oder neu eingereiht wird, ist ausdrücklich noch offen*. Andere Bewohner arbeiten weiter.
+
+**Vorgeschlagene kleine Implementierungsreihenfolge:**
+1. Vorhandene `SettlementJobManager`-, `player.gd`-, `main.gd`- und Interaktionspfade prüfen; Regressionen und nötige Entkopplungen identifizieren.
+2. Gemeinsamen offenen Arbeitsvorrat und eine einfache autonome Auftragswahl für **einen** Bewohner implementieren und testen.
+3. Eine Ressourcenarbeit ohne manuelle Einzelzuweisung vollständig durchführen, inklusive nachvollziehbarem Abschluss/Blockadegrund.
+4. Moduswechsel während eines Auftrags nach zuvor bestätigter Unterbrechungsregel sicher machen.
+5. Physische Lager/Reservierungen und autonome Lieferketten als eigenen Meilenstein ergänzen.
+6. Mehrere Bewohner, individuelle Prioritäten, Produktion und autonome Angriffsaufträge schrittweise ergänzen.
+
+**Akzeptanzkriterien für den ersten vertikalen Schnitt:**
+- Ein Arbeitsauftrag entsteht durch eine Planungsaktion, ohne dass der Spieler anschließend den Bewohner und jede Teilbewegung einzeln anklicken muss.
+- Die Spielfigur im Basismodus wählt und erledigt den Auftrag autonom; der Direktmodus bleibt weiterhin nutzbar.
+- Ressourcengewinn, Auftragsergebnis und Status sind überprüfbar; keine Duplikation.
+- Fehlende Voraussetzungen werden angezeigt und führen nicht zu Endlosschleifen.
+- Keine voreilige Implementierung von Lagerlogistik, Multi-NPC-KI oder Kampf als Voraussetzung für diesen ersten Schnitt.
+- Codeänderungen erfolgen nur auf ausdrücklichen Implementierungsauftrag; Tests werden nur als durchgeführt bezeichnet, wenn sie tatsächlich gelaufen sind.
+
+**Noch zu entscheiden:** Unterbrechungsregel beim Moduswechsel; genaue Prioritätsgewichtung, Arbeitsreservierungen und UI-Darstellung werden jeweils beim betreffenden Meilenstein spezifiziert.
+
 ### Beschlossen: Bewohner, Rekrutierung und Arbeit
 - Der eigene Charakter ist **NPC Nr. 1**; anfangs erledigt er Arbeiten nacheinander. Zusätzliche Bewohner erlauben parallele Arbeit.
 - Gemeinsames Auftragssystem für Bewohner: bewegen, Ressourcen bergen/sammeln, Holzfällen, Transportieren, Bauen, Landwirtschaft und Werkstationen bedienen; Prioritäten und nachvollziehbare Blockadegründe.
