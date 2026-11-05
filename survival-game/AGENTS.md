@@ -220,6 +220,28 @@ IMPLEMENTIERUNGSLEITLINIE FÜR CODEX:
 5. Tutor-/Ausführungsmodus aus diesem Dokument beachten;
    niemals allein aufgrund dieser Spezifikation Code ändern.
 
+
+MODUSWECHSEL – VERBINDLICHE AUFTRAGSFREIGABE (2026-11-05):
+- Beim Wechsel vom autonomen Basis- in den Direktmodus wird
+  ein der Spielerfigur zugewiesener/reservierter Auftrag
+  freigegeben und wieder für andere geeignete Bewohner
+  zur autonomen Übernahme verfügbar.
+- Die Spielerfigur beendet die autonome Ausführung; keine
+  parallele Arbeit oder Navigation im Direktmodus.
+- Bereits abgeschlossene Teilschritte und gelieferte
+  Baustellenmaterialien bleiben erhalten; der Restbedarf
+  wird korrekt neu bestimmt. Kein Zurücksetzen des Fortschritts.
+- Reservierungen für noch nicht übergebene Gegenstände
+  müssen sicher aufgehoben oder konsistent übertragen werden.
+  Gegenstände im Inventar der Spielerfigur sind nicht
+  automatisch für andere NPCs verfügbar.
+- Freigabe und neue Vergabe dürfen nicht gleichzeitig
+  doppelte Ausführung oder Ressourcen-Duplikation erzeugen.
+- Falls vorübergehend kein anderer Bewohner verfügbar ist,
+  bleibt der Auftrag offen, bis ein geeigneter Bewohner frei wird.
+- Für unteilbare laufende Aktionen muss Codex vor Umsetzung
+  einen sicheren Unterbrechungspunkt definieren.
+
 ============================================================
 AKTUELLEN PROJEKTSTAND BESTIMMEN
 ============================================================
