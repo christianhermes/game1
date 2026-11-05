@@ -142,6 +142,84 @@ ARCHITEKTURFOLGE:
   Arbeitsvorrat, autonome Auftragswahl und nachvollziehbare Prioritäten statt
   weiterer kleinteiliger Rechtsklick-Transportbefehle.
 
+
+============================================================
+TECHNISCHE PRÄZISIERUNG DER ZWEI MODI – 2026-11-05
+============================================================
+
+DIES IST EINE AUSARBEITUNG DER OBIGEN ENTSCHEIDUNG, KEIN
+AUFTRAG ZUR SOFORTIGEN IMPLEMENTIERUNG. Unentschiedene
+Designfragen bleiben ausdrücklich offen.
+
+GEMEINSAME SPIELLOGIK:
+- Charaktermodus und Basismodus sind zwei Steuerungsarten derselben
+  Spielfigur und derselben Welt, keine getrennten Spielstände.
+- Gameplay-Regeln für Ernte, Ressourcenentnahme, Lieferung,
+  Bauen, Produktion und später Kampf sollen in wiederverwendbaren
+  Aktionen/Services liegen. Manuelle Interaktion und NPC-Aufträge
+  lösen dieselben Regeln aus, auch wenn Animation/Input abweichen.
+- Ein Arbeitsauftrag beschreibt ein Ziel und seinen Bedarf; er
+  erzeugt keine Ressourcen. Tatsächliche Materialien müssen in
+  Inventaren, Welt-Pickups oder physischen Lagern existieren.
+- Zustandsänderungen müssen eindeutig erfolgen: keine doppelte
+  Entnahme, doppelte Belohnung oder Fertigstellung bei Abbruch,
+  Szenenwechsel oder gleichzeitigem Zugriff.
+
+AUTONOMER BASISMODUS:
+- Spieler markiert Arbeiten oder legt Produktions-/Bauaufträge an,
+  statt jedem Bewohner jede Teilbewegung vorzugeben.
+- Ein gemeinsamer Auftragsvorrat unterscheidet offene, reservierte,
+  laufende, blockierte und abgeschlossene/abgebrochene Arbeit.
+  Die exakten Datenstrukturen sind nach Codeprüfung festzulegen.
+- Geeignete freie Bewohner suchen selbst Aufgaben anhand einfacher
+  Prioritäten, Erreichbarkeit, Voraussetzungen und Verfügbarkeit.
+  Für die erste Version genügt eine transparente, deterministische
+  Auswahl; spätere Fähigkeiten und persönliche Prioritäten
+  können sie erweitern.
+- Ein vollständiger Auftrag darf mehrere Teilaktionen erfordern:
+  z. B. Holzquelle finden -> hinlaufen -> Holz entnehmen ->
+  Baustelle erreichen -> Material liefern -> Bauarbeit ausführen.
+  Teilaktionen sind interne Ausführungsschritte, keine Pflicht
+  zu einzelnen Spielerbefehlen.
+- Für normale Lagerlogistik werden Lieferbedarfe aus echten
+  Baustellen-/Produktions-/Lageranforderungen abgeleitet.
+  Fehlen Transport-NPCs, darf ein arbeitender Bewohner bei
+  Bedarf selbst Material holen (entsprechend Raumregel C).
+- Bei fehlendem Material, Werkzeug, Lagerplatz oder erreichbarem
+  Weg wird ein Auftrag nachvollziehbar blockiert und später
+  erneut geprüft, nicht endlos ohne Fortschritt wiederholt.
+- Kontextbefehle können gezielt priorisieren oder zuweisen.
+  Ein Gegner-Rechtsklick ist ein künftiger taktischer Angriffsbefehl,
+  der autonome Bewegung und Kampf auslöst, keine sofortige
+  Fernwirkung. Kampf ist kein verpflichtender Teil des ersten
+  Arbeitswarteschlangen-Meilensteins.
+
+DIREKTER CHARAKTERMODUS:
+- Eingaben bewegen und bedienen dieselbe Figur unmittelbar;
+  die Figur darf währenddessen keinen autonomen Job ausführen.
+- Bei einem Moduswechsel müssen aktuelle Bewegung, asynchrone
+  Arbeit und Reservierungen konsistent behandelt werden.
+  Die genaue Entscheidung (pausieren, freigeben, neu einreihen)
+  bleibt offen und ist vor Implementierung festzulegen.
+- Andere Bewohner setzen ihre autonomen Arbeiten unabhängig vom
+  Wechsel der Spielersteuerung fort.
+- Inventar, Ausrüstung, Gesundheit, Hunger, Position und bereits
+  ausgeführte Weltänderungen bleiben unverändert erhalten.
+
+IMPLEMENTIERUNGSLEITLINIE FÜR CODEX:
+1. Aktuelle Godot-Skripte für Main/Input, Player, JobManager,
+   Navigation, Inventar, Baustelle und Ressourcenquelle prüfen.
+2. Bestehende manuelle Einzelbefehle als Iststand dokumentieren,
+   aber nicht als Zielbild der autonomen Siedlung fortschreiben.
+3. Einen kleinen vertikalen Schnitt vorschlagen: markierte
+   Ressourcenarbeit -> offener Auftrag -> freie Spielfigur als
+   erster NPC wählt ihn -> läuft hin -> erledigt ihn -> Ergebnis
+   ist physisch vorhanden -> verständlicher Status.
+4. Erst danach automatischen Materialtransport und mehrstufige
+   Baustellenversorgung als eigene testbare Meilensteine planen.
+5. Tutor-/Ausführungsmodus aus diesem Dokument beachten;
+   niemals allein aufgrund dieser Spezifikation Code ändern.
+
 ============================================================
 AKTUELLEN PROJEKTSTAND BESTIMMEN
 ============================================================
