@@ -88,6 +88,60 @@ WEITER UNTEN. Für Details siehe ENTWICKLUNGSPLAN.md, Abschnitte 1 und 4.
   ignorieren. Nicht lesen, ändern, testen oder als Referenz verwenden,
   solange der Nutzer sie nicht ausdrücklich wieder aktiviert.
 
+
+============================================================
+VERBINDLICHE ZWEI STEUERUNGSMODI – 2026-11-05
+============================================================
+
+DIESE NEUE ENTSCHEIDUNG PRÄZISIERT UND ERSETZT ÄLTERE PASSAGEN
+ZUR BASIS- UND CHARAKTERSTEUERUNG.
+
+MODUS 1 – AUTONOMER BASIS-/SIEDLUNGSMODUS:
+
+- Die Spielerfigur ist derselbe Bewohner wie im Direktmodus, wird hier
+  aber grundsätzlich wie jeder andere NPC gesteuert.
+- Vorbilder sind Going Medieval und Stranded: Alien Dawn.
+- Der Spieler plant, priorisiert und stellt Arbeit in Warteschlangen.
+  Bewohner wählen geeignete offene Aufgaben selbstständig aus und
+  führen sie vollständig aus.
+- Dazu gehören insbesondere Sammeln/Bergen, Ressourcenabbau, Farming,
+  Transport, Einlagern, Bauen, Crafting, Produktion und Reparaturen.
+- Physische Ressourcen, Kisten, Inventare und tatsächliche Laufwege
+  bleiben verpflichtend. Die Automatisierung darf keine Gegenstände
+  teleportieren oder Bestände nur vortäuschen.
+- Der Spieler soll NICHT jeden Transport einzeln befehlen müssen. Ein
+  Ablauf wie "Pickup anklicken, danach Zielkiste anklicken" ist für den
+  normalen Basismodus zu viel Micromanagement und daher kein Zielbild.
+- Kontextbefehle dürfen Aufgaben erzeugen oder priorisieren. Ein
+  Rechtsklick auf einen Gegner erzeugt beispielsweise einen Angriffsbefehl;
+  die ausgewählte Figur navigiert zum Gegner und bekämpft ihn autonom.
+- Direkte Einzelbefehle sind Ausnahmen für Priorisierung, Notfälle oder
+  taktische Entscheidungen, nicht der normale Ablauf jeder Routinearbeit.
+- Die Spielerfigur verwendet dieselbe Auftrags-, Prioritäts-, Wegfindungs-
+  und Arbeitslogik wie alle späteren Bewohner. Keine dauerhafte Sonder-KI
+  nur für den ersten Charakter bauen.
+
+MODUS 2 – DIREKTER CHARAKTERMODUS:
+
+- Der Spieler steuert dieselbe Figur selbst, ungefähr im Stil von Fae Farm:
+  direkt laufen, zu Weltobjekten gehen, interagieren, Werkzeuge benutzen,
+  Ressourcen sammeln, arbeiten und kämpfen.
+- Inventar, Ausrüstung, Werte, Position und Weltzustand bleiben zwischen
+  beiden Modi erhalten. Es ist keine getrennte Abenteuerfigur.
+- Während der direkten Kontrolle erledigt diese Figur nicht gleichzeitig
+  einen autonomen Auftrag. Andere Bewohner arbeiten weiterhin selbstständig.
+- Ob ein beim Moduswechsel laufender Auftrag pausiert, freigegeben oder neu
+  eingereiht wird, wird beim Ausbau der Warteschlange konkret festgelegt.
+
+ARCHITEKTURFOLGE:
+
+- Manuelle und autonome Bedienung sollen nach Möglichkeit dieselben
+  Gameplay-Aktionen verwenden. Beispiel: Sowohl der direkte Tastendruck als
+  auch ein NPC-Auftrag rufen dieselbe eigentliche Ernte-/Bau-/Angriffslogik auf.
+- Der nächste Ausbau des Basismodus priorisiert deshalb einen gemeinsamen
+  Arbeitsvorrat, autonome Auftragswahl und nachvollziehbare Prioritäten statt
+  weiterer kleinteiliger Rechtsklick-Transportbefehle.
+
 ============================================================
 AKTUELLEN PROJEKTSTAND BESTIMMEN
 ============================================================

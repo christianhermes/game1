@@ -20,6 +20,10 @@ const BASE_CAMERA_ROTATION_SPEED := 1.5
 const BASE_CAMERA_MIN_SIZE := 10.0
 const BASE_CAMERA_MAX_SIZE := 45.0
 const BASE_CAMERA_ZOOM_STEP := 2.0
+const BASE_CAMERA_MIN_X := -18.0
+const BASE_CAMERA_MAX_X := 18.0
+const BASE_CAMERA_MIN_Z := -18.0
+const BASE_CAMERA_MAX_Z := 18.0
 
 # @onready bedeutet: Godot sucht diese Nodes erst, wenn die Szene bereit ist.
 @onready var camera: Camera3D = $Camera3D
@@ -38,7 +42,6 @@ var camera_target := Vector3.ZERO
 var control_mode := ControlMode.CHARACTER
 var base_camera_yaw := 0.0
 var base_camera_size := DEFAULT_CAMERA_SIZE
-
 # Speichert den Bewohner, der im Basismodus aktuell ausgewählt ist.
 var selected_actor: Node3D = null
 
@@ -51,12 +54,9 @@ func _ready() -> void:
 	_apply_control_mode()
 	_update_camera()
 	_prepare_build_menu()
-
 	# Startausrüstung: Der Spieler erhält drei Weizenkörner.
 	player.receive_item(&"wheat_seed", 3)
 	player.receive_item(&"hammer", 1)
-
-
 ## Übergibt den gültigen Baukatalog an das Menü und verbindet Auswahl sowie
 ## Sichtbarkeit genau einmal mit dem BuildManager. Das Menü bleibt bis zum
 ## Aktivieren des Baumodus geschlossen.
@@ -307,6 +307,20 @@ func _update_base_camera_input(delta: float) -> void:
 			* BASE_CAMERA_PAN_SPEED
 			* delta
 		)
+
+	# Das Kameraziel bleibt innerhalb der aktuellen 40-mal-40-Meter-Basiskarte.
+	# Ein kleiner Rand verhindert, dass der Mittelpunkt direkt auf den äußeren
+	# Platzhalterwänden liegt. Die Kamerahöhe wird dabei nicht verändert.
+	camera_target.x = clampf(
+		camera_target.x,
+		BASE_CAMERA_MIN_X,
+		BASE_CAMERA_MAX_X,
+	)
+	camera_target.z = clampf(
+		camera_target.z,
+		BASE_CAMERA_MIN_Z,
+		BASE_CAMERA_MAX_Z,
+	)
 
 	var rotation_input := Input.get_axis(
 		"rotate_camera_left",

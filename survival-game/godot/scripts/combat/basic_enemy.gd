@@ -11,6 +11,12 @@ extends CharacterBody3D
 @export_range(0.5, 5.0, 0.1) var attack_range := 1.4
 @export_range(1.0, 100.0, 1.0) var attack_damage := 10.0
 @export_range(0.1, 10.0, 0.1) var attack_cooldown := 1.2
+@export_range(0.0, 1.0, 0.05) var hit_stun_duration := 0.18
+@export_range(0.0, 20.0, 0.5) var knockback_speed := 7.0
+
+## Treffer unterbrechen den Gegner kurz und stoßen ihn vom Angreifer weg. Der
+## 180-Grad-Schlag schafft dadurch sichtbar Platz gegen eine Meute, ohne Gegner
+## dauerhaft zu lähmen oder bereits ein komplexes Statussystem einzuführen.
 @export var loot_scene: PackedScene
 @export var loot_item_id: StringName = &"stone"
 @export_range(1, 99, 1) var loot_amount := 1
@@ -23,11 +29,12 @@ var enemy_base_color := Color(0.65, 0.12, 0.18, 1.0)
 var hit_flash_tween: Tween
 var health_bar_tween: Tween
 var health_bar_fill_mesh: QuadMesh
+var hit_stun_remaining := 0.0
+var knockback_velocity := Vector3.ZERO
 
 @onready var body_mesh: MeshInstance3D = $MeshInstance3D
 @onready var health_bar: Node3D = $HealthBar
 @onready var health_bar_fill: MeshInstance3D = $HealthBar/Fill
-
 
 ## Initialisiert die Laufzeit-Lebenspunkte und sucht den Player unabhängig von
 ## seinem konkreten Szenenpfad über die gemeinsame Gruppe.
@@ -62,6 +69,14 @@ func _physics_process(delta: float) -> void:
 		attack_cooldown_remaining - delta,
 		0.0,
 	)
+	hit_stun_remaining = maxf(
+		hit_stun_remaining - delta,
+		0.0,
+	)
+	if hit_stun_remaining > 0.0:
+		velocity = knockback_velocity
+		move_and_slide()
+		return
 
 	if not is_instance_valid(target):
 		velocity = Vector3.ZERO
@@ -96,9 +111,17 @@ func _physics_process(delta: float) -> void:
 ## dass mehrere Treffer während des bereits eingeleiteten Todes mehrfach Beute
 ## erzeugen. Jeder gültige Treffer löst gemeinsam den Materialblitz, die
 ## temporäre Lebensleiste und eine aufsteigende Schadenszahl aus.
-func take_damage(amount: float, _attacker: Node3D = null) -> void:
+func take_damage(amount: float, attacker: Node3D = null) -> void:
 	if amount <= 0.0 or health <= 0.0:
 		return
+
+	knockback_velocity = Vector3.ZERO
+	if is_instance_valid(attacker):
+		var knockback_direction := global_position - attacker.global_position
+		knockback_direction.y = 0.0
+		if knockback_direction.length_squared() > 0.0:
+			knockback_velocity = knockback_direction.normalized() * knockback_speed
+	hit_stun_remaining = hit_stun_duration
 
 	health = clampf(health - amount, 0.0, max_health)
 	_play_hit_flash()

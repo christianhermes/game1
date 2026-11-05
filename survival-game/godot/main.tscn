@@ -29,6 +29,8 @@
 [ext_resource type="Resource" uid="uid://bh4i50sg2y5im" path="res://data/buildings/wood_chest.tres" id="28_qsp4k"]
 [ext_resource type="PackedScene" path="res://scenes/ui/storage_menu.tscn" id="28_storage_menu"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/basic_enemy.tscn" id="29_basic_enemy"]
+[ext_resource type="Script" path="res://scripts/navigation/world_navigation_3d.gd" id="30_world_navigation"]
+[ext_resource type="Script" path="res://scripts/navigation/pathfinding_agent_3d.gd" id="31_pathfinding_agent"]
 
 [sub_resource type="Environment" id="WorldEnvironment"]
 background_mode = 1
@@ -40,6 +42,10 @@ ambient_light_energy = 0.65
 [sub_resource type="StandardMaterial3D" id="GroundMaterial"]
 albedo_color = Color(0.25, 0.46, 0.2, 1)
 roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="RuinMaterial"]
+albedo_color = Color(0.34, 0.31, 0.28, 1)
+roughness = 1.0
 
 [sub_resource type="BoxMesh" id="GroundMesh"]
 material = SubResource("GroundMaterial")
@@ -61,6 +67,7 @@ radius = 1.8
 
 [sub_resource type="StandardMaterial3D" id="AttackEffectMaterial"]
 transparency = 1
+cull_mode = 2
 shading_mode = 0
 albedo_color = Color(1, 0.72, 0.12, 0.7)
 
@@ -81,9 +88,16 @@ albedo_color = Color(0.24948537, 0.7628475, 1.92523e-06, 1)
 size = Vector3(2, 0.1, 0.4)
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_lfxu0"]
+agent_height = 2.0
+agent_radius = 0.5
+agent_max_climb = 0.5
+agent_max_slope = 45.0
 vertices = PackedVector3Array(-19.5, 0.3, -19.5, -19.5, 0.3, 19.5, 19.5, 0.3, 19.5, 19.5, 0.3, -19.5)
 polygons = [PackedInt32Array(3, 2, 0), PackedInt32Array(0, 2, 1)]
 geometry_parsed_geometry_type = 1
+filter_low_hanging_obstacles = true
+filter_ledge_spans = true
+filter_walkable_low_height_spans = true
 
 [sub_resource type="BoxShape3D" id="GroundShape"]
 size = Vector3(40, 0.2, 40)
@@ -110,6 +124,7 @@ mesh = SubResource("GroundMesh")
 
 [node name="Player" type="CharacterBody3D" parent="." unique_id=1403501398 groups=["player", "selectable"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1)
+floor_snap_length = 0.5
 script = ExtResource("2_player")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Player" unique_id=187983686]
@@ -149,6 +164,7 @@ visible = false
 mesh = SubResource("TorusMesh_lfxu0")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="Player" unique_id=1115294508]
+script = ExtResource("31_pathfinding_agent")
 path_desired_distance = 0.2
 target_desired_distance = 0.2
 path_height_offset = -0.7
@@ -289,6 +305,18 @@ available_recipes = Array[ExtResource("13_074og")]([])
 [node name="BasicEnemy" parent="." unique_id=1489873208 instance=ExtResource("29_basic_enemy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1, -8)
 
+[node name="BasicEnemy2" parent="." unique_id=1202874955 instance=ExtResource("29_basic_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, -8)
+
+[node name="BasicEnemy3" parent="." unique_id=1270863595 instance=ExtResource("29_basic_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1, -10)
+
+[node name="BasicEnemy4" parent="." unique_id=1122476278 instance=ExtResource("29_basic_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, -10)
+
+[node name="BasicEnemy5" parent="." unique_id=1235182768 instance=ExtResource("29_basic_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1, -12)
+
 [node name="ConstructionSite" parent="." unique_id=290744299 instance=ExtResource("13_w48qg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 recipe = ExtResource("14_vivmo")
@@ -312,14 +340,62 @@ visible = false
 material_overlay = SubResource("StandardMaterial3D_hjb8m")
 mesh = SubResource("BoxMesh_lfxu0")
 
-[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1512420207]
+[node name="WorldNavigation" type="NavigationRegion3D" parent="." unique_id=1512420207 groups=["world_navigation"]]
+script = ExtResource("30_world_navigation")
 navigation_mesh = SubResource("NavigationMesh_lfxu0")
 
-[node name="GroundBody" type="StaticBody3D" parent="NavigationRegion3D" unique_id=382104567 groups=["build_surface"]]
+[node name="GroundBody" type="StaticBody3D" parent="WorldNavigation" unique_id=382104567 groups=["build_surface"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 
-[node name="GroundCollision" type="CollisionShape3D" parent="NavigationRegion3D/GroundBody" unique_id=766814386]
+[node name="GroundCollision" type="CollisionShape3D" parent="WorldNavigation/GroundBody" unique_id=766814386]
 shape = SubResource("GroundShape")
+
+[node name="BaseEnvironment" type="Node3D" parent="." unique_id=42554666]
+
+[node name="NorthBoundary" type="CSGBox3D" parent="BaseEnvironment" unique_id=1580352986 groups=["build_obstacle"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -19.5)
+use_collision = true
+size = Vector3(40, 3, 1)
+
+[node name="WestBoundary" type="CSGBox3D" parent="BaseEnvironment" unique_id=802096828 groups=["build_obstacle"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 1.5, 0)
+use_collision = true
+size = Vector3(1, 3, 40)
+
+[node name="EastBoundary" type="CSGBox3D" parent="BaseEnvironment" unique_id=1228298347 groups=["build_obstacle"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 1.5, 0)
+use_collision = true
+size = Vector3(1, 3, 40)
+
+[node name="SouthBoundaryLeft" type="CSGBox3D" parent="BaseEnvironment" unique_id=1490350151 groups=["build_obstacle"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.5, 1.5, 19.5)
+use_collision = true
+size = Vector3(17, 3, 1)
+
+[node name="SouthBoundaryRight" type="CSGBox3D" parent="BaseEnvironment" unique_id=1427552509 groups=["build_obstacle"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 1.5, 19.5)
+use_collision = true
+size = Vector3(17, 3, 1)
+
+[node name="NorthWestRuin" type="Node3D" parent="BaseEnvironment"]
+
+[node name="NorthWall" type="CSGBox3D" parent="BaseEnvironment/NorthWestRuin" groups=["build_obstacle"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, -12)
+use_collision = true
+size = Vector3(8, 3, 0.4)
+material = SubResource("RuinMaterial")
+
+[node name="WestWall" type="CSGBox3D" parent="BaseEnvironment/NorthWestRuin" groups=["build_obstacle"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.5, -8)
+use_collision = true
+size = Vector3(0.4, 3, 8)
+material = SubResource("RuinMaterial")
+
+[node name="BrokenEastWall" type="CSGBox3D" parent="BaseEnvironment/NorthWestRuin" groups=["build_obstacle"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.75, -10)
+use_collision = true
+size = Vector3(0.4, 1.5, 4)
+material = SubResource("RuinMaterial")
 
 [connection signal="selected_item_changed" from="UI/Hotbar" to="Player" method="_on_hotbar_selected_item_changed"]
 

@@ -284,6 +284,10 @@ func _complete_building() -> void:
 	finished_building.global_transform = global_transform
 	# Das fertige Gebäude übernimmt denselben Key, bevor die Baustelle verschwindet.
 	build_grid.call("replace_owner", self, finished_building)
+	# Jede Karte kann ihre eigene WorldNavigation3D besitzen. Der Gruppenaufruf
+	# hält das Bausystem davon unabhängig und aktualisiert Wege erst nach dem Frame,
+	# in dem die neue statische Gebäudekollision im Szenenbaum angekommen ist.
+	get_tree().call_group(&"world_navigation", &"request_rebake")
 	queue_free()
 
 

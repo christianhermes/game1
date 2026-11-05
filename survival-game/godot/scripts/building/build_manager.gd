@@ -9,6 +9,8 @@ const PLACEMENT_ROTATION_STEP := PI / 2.0
 const MIN_BUILD_LEVEL := 0
 const MAX_BUILD_LEVEL := 3
 const BUILD_OCCUPANT_GROUP := &"build_occupant"
+const BUILD_OBSTACLE_GROUP := &"build_obstacle"
+const PLACEMENT_OBSTACLE_CHECK_HEIGHT := 0.2
 const VALID_PREVIEW_COLOR := Color(0.25, 0.76, 0.0, 1.0)
 const INVALID_PREVIEW_COLOR := Color(0.9, 0.15, 0.1, 1.0)
 
@@ -138,13 +140,81 @@ func _process(_delta: float) -> void:
 		return
 	placement_preview.visible = true
 	placement_preview.global_position = current_placement_position + Vector3(0.0, 0.05, 0.0)
-	current_placement_valid = bool(build_grid.call(
+	current_placement_valid = _can_place_current_selection()
+	_update_placement_preview_color(current_placement_valid)
+
+
+## Verbindet die logische Rasterbelegung mit den realen Hindernissen der Welt.
+## Dadurch verwenden die Vorschaufarbe und die tatsächliche Platzierung exakt
+## dieselbe Entscheidung und können nicht unterschiedliche Ergebnisse liefern.
+func _can_place_current_selection() -> bool:
+	if current_placement_position == null or not _has_valid_build_dependencies():
+		return false
+
+	var grid_position_available := bool(build_grid.call(
 		"can_place",
 		selected_recipe,
 		current_grid_origin,
 		current_rotation_quarters,
 	))
-	_update_placement_preview_color(current_placement_valid)
+	if not grid_position_available:
+		return false
+
+	return not _is_blocked_by_world_obstacle(
+		current_placement_position,
+		selected_recipe,
+		current_rotation_quarters,
+	)
+
+
+## Prüft die Grundfläche eines Bauteils mit einer flachen BoxShape3D. Nur
+## Collider der Gruppe build_obstacle sperren den Bauplatz; Bewohner, Pickups
+## und der Boden dürfen die Abfrage deshalb berühren, ohne das Bauen zu stoppen.
+func _is_blocked_by_world_obstacle(
+	placement_position: Vector3,
+	recipe: BuildRecipe,
+	rotation_quarters: int,
+) -> bool:
+	if recipe == null or not recipe.is_placement_data_valid() or not is_inside_tree():
+		return true
+
+	var check_shape := BoxShape3D.new()
+	check_shape.size = _get_placement_obstacle_check_size(recipe)
+
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = check_shape
+	query.collide_with_bodies = true
+	query.collide_with_areas = true
+	query.transform = Transform3D(
+		Basis(Vector3.UP, rotation_quarters * PLACEMENT_ROTATION_STEP),
+		placement_position + Vector3.UP * (PLACEMENT_OBSTACLE_CHECK_HEIGHT * 0.5),
+	)
+
+	var hits := get_world_3d().direct_space_state.intersect_shape(query, 32)
+	for hit in hits:
+		var collider := hit.get("collider") as Node
+		if collider != null and collider.is_in_group(BUILD_OBSTACLE_GROUP):
+			return true
+
+	return false
+
+
+## Liefert die ungedrehte Grundfläche der aktuellen Bauart. Die Drehung steckt
+## separat im Transform der Physikabfrage und funktioniert daher ebenso für
+## rechteckige, später ergänzte Rezepte.
+func _get_placement_obstacle_check_size(recipe: BuildRecipe) -> Vector3:
+	if recipe.placement_type == BuildRecipe.PlacementType.WALL_EDGE:
+		return Vector3(
+			BuildGrid.CELL_SIZE,
+			PLACEMENT_OBSTACLE_CHECK_HEIGHT,
+			0.4,
+		)
+
+	return Vector3(
+		recipe.footprint.x * BuildGrid.CELL_SIZE,
+		PLACEMENT_OBSTACLE_CHECK_HEIGHT,
+		recipe.footprint.y * BuildGrid.CELL_SIZE,
+	)
 
 
 ## Übernimmt beim Szenenstart bereits platzierte Baustellen in das zentrale
@@ -359,8 +429,10 @@ func try_place_construction_site() -> bool:
 		or current_placement_position == null
 		or construction_site_scene == null
 		or not _has_valid_build_dependencies()
-		or not current_placement_valid
+		or not _can_place_current_selection()
 	):
+		current_placement_valid = false
+		_update_placement_preview_color(false)
 		return false
 	var site = construction_site_scene.instantiate() as ConstructionSite
 	if site == null:

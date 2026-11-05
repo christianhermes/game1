@@ -30,6 +30,8 @@ window/stretch/mode="canvas_items"
 
 selectable=""
 build_occupant=""
+build_obstacle=""
+world_navigation=""
 
 [input]
 

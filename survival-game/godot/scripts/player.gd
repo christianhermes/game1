@@ -6,11 +6,21 @@ extends CharacterBody3D
 # Bewegungsgeschwindigkeit des Spielers in Metern pro Sekunde.
 const SPEED := 6.0
 
+## Schwerkraft und Floor Snap sorgen dafür, dass dieselbe Figur später auch
+## Rampen, Treppen und tiefer liegende begehbare Flächen physisch verfolgen kann.
+@export_range(1.0, 100.0, 1.0) var gravity_acceleration := 24.0
+
 ## Der Nahkampfangriff verwendet die Eingabeaktion attack und eine eigene
 ## AttackArea mit 1,8 Metern Radius. Schaden und Cooldown bleiben exportiert,
 ## damit sich das erste Kampfgefühl ohne Codeänderung abstimmen lässt.
 @export_range(1.0, 100.0, 1.0) var attack_damage := 25.0
 @export_range(0.1, 5.0, 0.1) var attack_cooldown := 0.6
+@export_range(1.0, 360.0, 1.0) var attack_arc_degrees := 180.0
+@export_range(0.05, 2.0, 0.05) var damage_immunity_duration := 0.45
+
+## Nach einem gültigen Gegnertreffer schützt dieses kurze Zeitfenster den Player
+## vor gleichzeitigem Meutenschaden. Es verhindert mehrere Treffer im selben
+## Moment, ohne eine Ausweichrolle oder dauerhafte Unverwundbarkeit einzuführen.
 
 # Diese ID verbindet den sichtbaren CharacterBody3D mit seinen persistenten
 # Aufträgen im SettlementJobManager.
@@ -35,13 +45,12 @@ var selected_item_id: StringName = &""
 
 var spawn_position := Vector3.ZERO
 var attack_cooldown_remaining := 0.0
+var facing_direction := Vector3.FORWARD
 var attack_effect_tween: Tween
 var hurt_feedback_tween: Tween
 var player_material: StandardMaterial3D
 var player_base_color := Color(0.36, 0.55, 0.86, 1.0)
-
-# Zeigt an, ob der Bewohner aktuell einem Laufauftrag folgt.
-var has_move_target := false
+var damage_immunity_remaining = 0.0
 
 # Reichweite für Interaktionen und das Inventar des Spielers.
 @onready var interaction_area: Area3D = $InteractionArea
@@ -51,7 +60,7 @@ var has_move_target := false
 @onready var inventory: Inventory = $Inventory
 @onready var stats: PlayerStats = $PlayerStats
 @onready var selection_marker: MeshInstance3D = $SelectionMarker
-@onready var navigation_agent: NavigationAgent3D = $NavigationAgent3D
+@onready var navigation_agent: PathfindingAgent3D = $NavigationAgent3D
 
 func _ready() -> void:
 	spawn_position = global_position
@@ -61,6 +70,7 @@ func _ready() -> void:
 		player_material = source_material.duplicate() as StandardMaterial3D
 		body_mesh.material_override = player_material
 		player_base_color = player_material.albedo_color
+	_prepare_attack_effect_mesh()
 
 # Einheitlicher Eingang für alle Gegenstände. Die Restmenge bleibt beim
 # Aufrufer, wenn das Inventar nicht genug Platz besitzt.
@@ -104,7 +114,7 @@ func get_world_info_text() -> String:
 		activity = "Direkte Steuerung"
 	elif current_job_id >= 0:
 		activity = "Arbeitet (Auftrag %d)" % current_job_id
-	elif has_move_target:
+	elif navigation_agent.has_destination:
 		activity = "Unterwegs"
 
 	var lines: Array[String] = [
@@ -126,14 +136,13 @@ func get_worker_id() -> StringName:
 # Der Aufrufer nennt nur das Ziel. Welchen Weg der Bewohner dorthin nimmt,
 # entscheidet der NavigationAgent3D.
 func set_move_target(target_position: Vector3) -> void:
-	navigation_agent.target_position = target_position
-	has_move_target = true
+	navigation_agent.set_destination(target_position)
 
 
 # Beendet nur die aktuelle Bewegung. Die spätere Auftragslogik entscheidet
 # separat, ob der zugehörige Auftrag fortgesetzt oder abgebrochen wird.
 func cancel_move_target() -> void:
-	has_move_target = false
+	navigation_agent.cancel_destination()
 	velocity = Vector3.ZERO
 
 
@@ -142,11 +151,15 @@ func cancel_move_target() -> void:
 # Cooldown läuft unabhängig von Bewegung und frühen Rückgaben einmal pro Takt.
 func _physics_process(delta: float) -> void:
 	var direct_input_available := can_move and direct_control_enabled
+	_apply_gravity(delta)
 	attack_cooldown_remaining = maxf(
 		attack_cooldown_remaining - delta,
 		0.0,
 	)
-
+	damage_immunity_remaining = maxf(
+		damage_immunity_remaining - delta,
+		0.0,
+	)
 	# "interact" ist eine Aktion aus den Eingabe-Einstellungen des Projekts.
 	if direct_input_available and Input.is_action_just_pressed("interact"):
 		_try_interact()
@@ -156,7 +169,8 @@ func _physics_process(delta: float) -> void:
 
 	# Bei gesperrter Bewegung wird vorhandene Geschwindigkeit sofort beendet.
 	if not direct_input_available:
-		velocity = Vector3.ZERO
+		velocity.x = 0.0
+		velocity.z = 0.0
 		if can_move and not direct_control_enabled:
 			_update_autonomous_movement()
 		move_and_slide()
@@ -183,28 +197,35 @@ func _physics_process(delta: float) -> void:
 	right = right.normalized()
 
 	var direction := right * input.x + forward * input.y
+	if direction.length_squared() > 0.0:
+		facing_direction = direction.normalized()
 
 	velocity.x = direction.x * SPEED
 	velocity.z = direction.z * SPEED
 
 	# CharacterBody3D bewegt sich und berücksichtigt dabei Kollisionen.
 	move_and_slide()
-
 	if direct_input_available and Input.is_action_just_pressed("attack"):
 		_try_attack()
 
 
-## Führt nach Ablauf des Cooldowns immer einen sichtbaren Angriff aus. Dadurch
-## erhält auch ein Fehlschlag eine klare Rückmeldung und verbraucht den normalen
-## Angriffs-Cooldown. Getroffen wird höchstens der nächstgelegene gültige Gegner.
+## Der NavigationAgent berechnet nur einen Weg. Die tatsächliche Höhenbewegung
+## bleibt Aufgabe des CharacterBody, damit Kollision, Gefälle und Stürze korrekt
+## mit der Weltphysik zusammenarbeiten.
+func _apply_gravity(delta: float) -> void:
+	if is_on_floor():
+		velocity.y = 0.0
+	else:
+		velocity.y -= gravity_acceleration * delta
+
+
 func _try_attack() -> void:
 	if attack_cooldown_remaining > 0.0:
 		return
 	attack_cooldown_remaining = attack_cooldown
 	_play_attack_effect()
 
-	var closest_enemy: Node3D = null
-	var closest_distance_squared := INF
+	var minimum_direction_dot := cos(deg_to_rad(attack_arc_degrees * 0.5))
 	for body in attack_area.get_overlapping_bodies():
 		if not body.is_in_group("enemies") or not body.has_method("take_damage"):
 			continue
@@ -213,20 +234,48 @@ func _try_attack() -> void:
 		if enemy == null:
 			continue
 
-		var distance_squared := global_position.distance_squared_to(enemy.global_position)
-		if distance_squared < closest_distance_squared:
-			closest_enemy = enemy
-			closest_distance_squared = distance_squared
+		var direction_to_enemy := enemy.global_position - global_position
+		direction_to_enemy.y = 0.0
+		if direction_to_enemy.length_squared() > 0.0:
+			direction_to_enemy = direction_to_enemy.normalized()
+			## Eine kleine Toleranz schließt Gegner exakt auf der 90-Grad-Grenze
+			## zuverlässig in den gewünschten 180-Grad-Halbkreis ein.
+			if facing_direction.dot(direction_to_enemy) < minimum_direction_dot - 0.0001:
+				continue
 
-	if closest_enemy == null:
+		enemy.call("take_damage", attack_damage, self)
+
+
+## Erzeugt aus Dreiecksstreifen einen sichtbaren Ringabschnitt, dessen Winkel
+## exakt zum Gameplay-Wert attack_arc_degrees passt. So zeigt der Effekt keine
+## größere Trefferfläche an, als der Angriff tatsächlich besitzt.
+func _prepare_attack_effect_mesh() -> void:
+	var placeholder_mesh := attack_effect.mesh as TorusMesh
+	if placeholder_mesh == null:
 		return
+	var effect_material := placeholder_mesh.material
+	var arc_mesh := ImmediateMesh.new()
+	var segment_count := 24
+	var half_arc_radians := deg_to_rad(attack_arc_degrees * 0.5)
 
-	closest_enemy.call("take_damage", attack_damage, self)
+	arc_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP, effect_material)
+	for segment_index in range(segment_count + 1):
+		var progress := float(segment_index) / float(segment_count)
+		var angle := lerpf(-half_arc_radians, half_arc_radians, progress)
+		var arc_direction := Vector3(sin(angle), 0.0, -cos(angle))
+
+		arc_mesh.surface_set_normal(Vector3.UP)
+		arc_mesh.surface_add_vertex(arc_direction * 1.35)
+		arc_mesh.surface_set_normal(Vector3.UP)
+		arc_mesh.surface_add_vertex(arc_direction * 1.8)
+	arc_mesh.surface_end()
+	attack_effect.mesh = arc_mesh
 
 
 func _play_attack_effect() -> void:
 	if attack_effect_tween != null:
 		attack_effect_tween.kill()
+	attack_effect.rotation.y = atan2(-facing_direction.x, -facing_direction.z)
 	attack_effect.scale = Vector3.ONE * 0.25
 	attack_effect.visible = true
 	attack_effect_tween = create_tween()
@@ -246,10 +295,13 @@ func _play_attack_effect() -> void:
 ## ausgewertet werden. Bereits verlorenes Leben erzeugt kein weiteres visuelles
 ## Trefferfeedback während der Respawn-Wartezeit.
 func take_damage(amount: float, _attacker: Node3D = null) -> void:
+	if damage_immunity_remaining > 0.0:
+		return
 	if amount <= 0.0 or stats.health <= 0.0:
 		return
 	stats.take_damage(amount)
 	_play_hurt_feedback()
+	damage_immunity_remaining = damage_immunity_duration
 
 
 func _play_hurt_feedback() -> void:
@@ -268,26 +320,21 @@ func _play_hurt_feedback() -> void:
 
 
 func _update_autonomous_movement() -> void:
-	if not has_move_target:
+	if not navigation_agent.has_destination:
 		return
 
-	if navigation_agent.is_navigation_finished():
-		has_move_target = false
+	var direction := navigation_agent.get_next_movement_direction(global_position)
+	if not navigation_agent.has_destination:
 		velocity = Vector3.ZERO
-		_complete_current_job()
+		if navigation_agent.last_result == PathfindingAgent3D.DestinationResult.REACHED:
+			_complete_current_job()
+		elif current_job_id >= 0:
+			SettlementJobManager.cancel_job(current_job_id)
+			current_job_id = -1
 		return
 
-	# Der NavigationAgent3D liefert in jedem Physikschritt den nächsten Punkt
-	# seines berechneten Weges und nicht sofort das endgültige Ziel.
-	var next_path_position := navigation_agent.get_next_path_position()
-
-	# Ziel minus aktuelle Position ergibt die Bewegungsrichtung. Der Y-Anteil
-	# wird entfernt, damit der CharacterBody3D auf dem Boden bleibt.
-	var direction := next_path_position - global_position
-	direction.y = 0.0
-	direction = direction.normalized()
-
-	# Dieselbe Geschwindigkeit wie bei direkter WASD-Steuerung wird verwendet.
+	# Die wiederverwendbare Komponente liefert nur die Richtung. Der Bewohner
+	# behält dadurch seine eigene Geschwindigkeit und CharacterBody-Bewegung.
 	velocity.x = direction.x * SPEED
 	velocity.z = direction.z * SPEED
 

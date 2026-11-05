@@ -26,12 +26,22 @@ Dieses Dokument verbindet die langfristige Vision mit überprüfbaren, kleinen t
 
 ### Beschlossen: Perspektive, Spielfigur und Welt
 - **Basis im Stil von Going Medieval:** isometrische/freie Übersichtskamera, Zoom/Rotation und Mausinteraktion; keine permanente Third-Person-Steuerung in der Siedlung.
-- **Abenteuer im Stil der Steuerungs-/Kameraperspektive von Stardew Valley:** direkte Kontrolle des eigenen Charakters in einer Top-down-/schrägen Übersichtsperspektive; vorläufig weiterhin **stilisiertes Low-Poly-3D**, kein beschlossener Wechsel zu Pixel-Art/2D.
+- **Direktmodus im Stil von Fae Farm:** direkte Kontrolle des eigenen Charakters in einer Top-down-/schrägen Übersichtsperspektive; vorläufig weiterhin **stilisiertes Low-Poly-3D**, kein beschlossener Wechsel zu Pixel-Art/2D.
 - **Dieselbe Figur in beiden Modi:** in der Basis der erste autonom arbeitende Bewohner/NPC mit Aufgaben und Wegfindung, bei Expeditionen direkt gesteuerter Held. Einheitliche Identität, Ausrüstung, Inventar und Stats.
 - **Basis läuft während Expeditionen weiter (Variante B):** NPCs arbeiten, Transporte, Pflanzenwachstum, Verderb und passive Produktion laufen fort. Technisch darf eine vereinfachte ereignis-/zeitbasierte Hintergrundsimulation verwendet werden; keine aufwendige Offscreen-3D-Simulation nötig. Der auf Expedition befindliche Held steht für Basisaufträge nicht zur Verfügung.
 - **Basisangriffe:** sehr spät, zunächst isometrische taktische Ansicht mit NPC-Verteidigung. Direktes Übernehmen des Charakters während einer Basisschlacht ist ausdrücklich **weit hinten** und kein frühes Ziel.
 - **Spielstart:** in einer zerstörten ehemaligen Stadt. Ruinen sind verwertbare Ressourcenquellen, restaurierbare/abbaubare Bauobjekte und Fundorte für Hinweise; Freiräumen kann Keller/Wege/Fundstellen freilegen.
 - **Atmosphäre:** gemütlicher, hoffnungsvoller Wiederaufbau mit düsterer Vergangenheit und optionaler Kriminal-/Fantasy-Ermittlung. **Konkrete Story, Täter, Stadtname, Figuren, Beweisabfolge und Enden sind NICHT beschlossen und werden nicht jetzt implementiert.**
+
+### Beschlossen: Zwei Steuerungsmodi und gemeinsames Arbeitssystem (2026-11-05)
+- **Autonomer Basis-/Siedlungsmodus:** Die Spielerfigur wird wie jeder andere Bewohner in Going Medieval oder Stranded: Alien Dawn behandelt. Der Spieler plant Arbeit, setzt Prioritäten und erzeugt Aufträge; geeignete Bewohner wählen offene Aufgaben selbstständig und führen sie vollständig aus.
+- **Gemeinsame Aufgabenarten:** Ressourcen sammeln/abbauen, Farming, physischer Transport, Einlagern, Bauen, Crafting, Produktion, Reparieren und Kämpfen laufen über dasselbe erweiterbare Auftrags- und Prioritätssystem.
+- **Kein Routine-Micromanagement:** Der Spieler muss für normale Logistik nicht nacheinander eine Ressource und eine Zielkiste anklicken. Transporte werden aus Arbeitsbedarf, Lagerregeln und offenen Aufträgen abgeleitet und von Bewohnern autonom ausgeführt.
+- **Kontext und Kampf:** Kontextbefehle erzeugen oder priorisieren Arbeit. Ein Rechtsklick auf einen Gegner erzeugt einen Angriffsbefehl für die ausgewählte Figur beziehungsweise später ausgewählte Bewohner; Anlaufen und Kampf erfolgen autonom.
+- **Direkter Charaktermodus:** Dieselbe Figur wird Fae-Farm-artig direkt gesteuert. Der Spieler läuft zu Objekten, interagiert, benutzt Werkzeuge, sammelt, arbeitet und kämpft manuell.
+- **Ein Zustand, zwei Bedienungen:** Inventar, Ausrüstung, Stats, Position und Weltobjekte bleiben dieselben. Direkte Eingaben und autonome Aufträge sollen dieselben Gameplay-Aktionen verwenden, damit keine widersprüchlichen doppelten Systeme entstehen.
+- **Keine Doppelarbeit:** Eine direkt kontrollierte Figur bearbeitet nicht gleichzeitig einen autonomen Auftrag; andere Bewohner arbeiten weiter. Das genaue Pausieren/Freigeben eines laufenden Auftrags beim Moduswechsel wird mit der Auftragswarteschlange festgelegt.
+- **Technische Konsequenz:** Nächster sinnvoller Ausbau ist ein gemeinsamer Arbeitsvorrat mit autonomer Auftragswahl und einfachen Prioritäten. Einzelne manuelle Transportbefehle sind höchstens Debug-/Notfallwerkzeuge und nicht das Zielbild des Basismodus.
 
 ### Beschlossen: Bewohner, Rekrutierung und Arbeit
 - Der eigene Charakter ist **NPC Nr. 1**; anfangs erledigt er Arbeiten nacheinander. Zusätzliche Bewohner erlauben parallele Arbeit.
